@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.diego.littly.core.common.di.ApplicationScope
@@ -95,7 +96,20 @@ class ModelDownloadWorker @AssistedInject constructor(
 
                     val now = System.currentTimeMillis()
                     if (now - lastNotificationUpdate > 500) {
+                        val progress = if (totalBytes != null && totalBytes > 0) {
+                            (bytesDownloaded * 100 / totalBytes).toInt()
+                        } else {
+                            0
+                        }
+                        
                         setForeground(createForegroundInfo(bytesDownloaded, totalBytes))
+                        setProgressAsync(
+                            Data.Builder()
+                                .putLong("bytes_downloaded", bytesDownloaded)
+                                .putLong("total_bytes", totalBytes ?: 0L)
+                                .putInt("progress", progress)
+                                .build()
+                        )
                         lastNotificationUpdate = now
                     }
                 }

@@ -68,6 +68,13 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_done">Get started</string>
     <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_model_title">Download AI Model</string>
+    <string name="onboarding_model_body">Littly uses a small AI model (~550MB) to generate personalized ideas for your habits. This runs entirely on your device - your data never leaves your phone.</string>
+    <string name="onboarding_model_download">Download Model</string>
+    <string name="onboarding_model_skip">Skip for now</string>
+    <string name="onboarding_model_downloading">Downloading...</string>
+    <string name="onboarding_model_complete">Download complete!</string>
+    <string name="onboarding_model_failed">Download failed. Please try again.</string>
 
     <string name="settings_notifications_title">Notifications</string>
     <string name="settings_notifications_allowed">Allowed — reminders can appear</string>
