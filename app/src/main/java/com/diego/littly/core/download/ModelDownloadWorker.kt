@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -28,6 +29,7 @@ import okio.sink
 import okio.source
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 @HiltWorker
 class ModelDownloadWorker @AssistedInject constructor(
@@ -37,12 +39,19 @@ class ModelDownloadWorker @AssistedInject constructor(
     @ApplicationScope private val scope: CoroutineScope
 ) : CoroutineWorker(appContext, workerParams) {
 
-    private val client = OkHttpClient.Builder().build()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.MINUTES)
+        .writeTimeout(5, TimeUnit.MINUTES)
+        .build()
     private var downloadJob: Job? = null
 
     override suspend fun doWork(): Result {
         val modelUrl = inputData.getString(KEY_MODEL_URL) ?: return Result.failure()
         val destinationPath = inputData.getString(KEY_DESTINATION_PATH) ?: return Result.failure()
+
+        Log.d("ModelDownload", "Starting download from: $modelUrl")
+        Log.d("ModelDownload", "Destination: $destinationPath")
 
         setForeground(createForegroundInfo(0, null))
 
@@ -63,11 +72,13 @@ class ModelDownloadWorker @AssistedInject constructor(
                 val response = client.newCall(request).execute()
 
                 if (!response.isSuccessful && response.code != 206) {
+                    Log.e("ModelDownload", "Download failed with response code: ${response.code}")
                     response.close()
                     return@withContext Result.retry()
                 }
 
                 val body = response.body ?: run {
+                    Log.e("ModelDownload", "Response body is null")
                     response.close()
                     return@withContext Result.retry()
                 }
@@ -79,6 +90,8 @@ class ModelDownloadWorker @AssistedInject constructor(
                     contentLength
                 }
 
+                Log.d("ModelDownload", "Response code: ${response.code}, Total bytes: $totalBytes")
+
                 val append = response.code == 206
                 val sink = file.sink(append).buffer()
                 val source = body.source()
@@ -86,6 +99,15 @@ class ModelDownloadWorker @AssistedInject constructor(
                 var bytesDownloaded = existingSize
                 val buffer = ByteArray(8192)
                 var lastNotificationUpdate = 0L
+
+                // Report initial progress immediately
+                setProgressAsync(
+                    Data.Builder()
+                        .putLong("bytes_downloaded", bytesDownloaded)
+                        .putLong("total_bytes", totalBytes ?: 0L)
+                        .putInt("progress", 0)
+                        .build()
+                )
 
                 while (!isStopped) {
                     val read = source.read(buffer, 0, buffer.size)
@@ -120,8 +142,10 @@ class ModelDownloadWorker @AssistedInject constructor(
                 response.close()
 
                 setForeground(createForegroundInfo(bytesDownloaded, totalBytes))
+                Log.d("ModelDownload", "Download completed successfully")
                 Result.success()
             } catch (e: Exception) {
+                Log.e("ModelDownload", "Download failed", e)
                 if (isStopped) {
                     Result.failure()
                 } else {

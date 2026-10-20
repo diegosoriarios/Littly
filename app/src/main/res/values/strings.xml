@@ -75,6 +75,9 @@
     <string name="onboarding_model_downloading">Downloading...</string>
     <string name="onboarding_model_complete">Download complete!</string>
     <string name="onboarding_model_failed">Download failed. Please try again.</string>
+    <string name="onboarding_model_waiting">Waiting for network...</string>
+    <string name="onboarding_model_waiting_hint">Download will start when connected to internet</string>
+    <string name="onboarding_model_cancel">Cancel download</string>
 
     <string name="settings_notifications_title">Notifications</string>
     <string name="settings_notifications_allowed">Allowed — reminders can appear</string>

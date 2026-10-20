@@ -59,7 +59,7 @@ class ModelDownloadRepository @Inject constructor(
                     WorkInfo.State.SUCCEEDED -> ModelDownloadState.Completed
                     WorkInfo.State.FAILED -> ModelDownloadState.Failed("Download failed")
                     WorkInfo.State.CANCELLED -> ModelDownloadState.Idle
-                    WorkInfo.State.BLOCKED -> ModelDownloadState.Failed("Download blocked")
+                    WorkInfo.State.BLOCKED -> ModelDownloadState.WaitingForNetwork
                     null -> if (modelLocator.isModelPresent()) {
                         ModelDownloadState.Completed
                     } else {
@@ -77,8 +77,8 @@ class ModelDownloadRepository @Inject constructor(
 
         val destinationPath = modelLocator.modelFile.absolutePath
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
-            .setRequiresStorageNotLow(true)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresStorageNotLow(false)
             .build()
 
         val inputData = Data.Builder()
@@ -127,12 +127,13 @@ class ModelDownloadRepository @Inject constructor(
     }
 
     companion object {
-        const val DEFAULT_MODEL_URL = "https://huggingface.co/litert-community/gemma-3-1b-it-int4/resolve/main/model.task"
+        const val DEFAULT_MODEL_URL = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task"
     }
 }
 
 sealed class ModelDownloadState {
     data object Idle : ModelDownloadState()
+    data object WaitingForNetwork : ModelDownloadState()
     data class Downloading(val bytesDownloaded: Long, val totalBytes: Long?) : ModelDownloadState()
     data object Completed : ModelDownloadState()
     data class Failed(val error: String) : ModelDownloadState()

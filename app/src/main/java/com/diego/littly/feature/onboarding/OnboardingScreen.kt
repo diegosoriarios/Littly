@@ -96,6 +96,8 @@ fun OnboardingScreen(
                     else -> ModelDownloadPage(
                         downloadState = downloadState,
                         onDownload = { viewModel.startModelDownload() },
+                        onCancel = { viewModel.cancelDownload() },
+                        onRetry = { viewModel.retryDownload() },
                         onDone = {
                             viewModel.complete()
                             onDone()
@@ -199,6 +201,8 @@ private fun BatteryPage(onOptimize: () -> Unit) {
 private fun ModelDownloadPage(
     downloadState: ModelDownloadState,
     onDownload: () -> Unit,
+    onCancel: () -> Unit,
+    onRetry: () -> Unit,
     onDone: () -> Unit
 ) {
     PageScaffold(
@@ -215,6 +219,29 @@ private fun ModelDownloadPage(
                         .height(52.dp)
                 ) {
                     Text(stringResource(R.string.onboarding_model_download))
+                }
+            }
+            is ModelDownloadState.WaitingForNetwork -> {
+                Text(
+                    text = stringResource(R.string.onboarding_model_waiting),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.onboarding_model_waiting_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = onRetry,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text("Retry")
                 }
             }
             is ModelDownloadState.Downloading -> {
@@ -244,6 +271,18 @@ private fun ModelDownloadPage(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                
+                Spacer(Modifier.height(16.dp))
+                
+                // Cancel button
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(stringResource(R.string.onboarding_model_cancel))
+                }
             }
             is ModelDownloadState.Completed -> {
                 Text(
@@ -269,7 +308,7 @@ private fun ModelDownloadPage(
                 )
                 Spacer(Modifier.height(16.dp))
                 Button(
-                    onClick = onDownload,
+                    onClick = onRetry,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp)
@@ -279,7 +318,7 @@ private fun ModelDownloadPage(
             }
         }
         
-        if (downloadState !is ModelDownloadState.Downloading) {
+        if (downloadState !is ModelDownloadState.Downloading && downloadState !is ModelDownloadState.WaitingForNetwork) {
             Spacer(Modifier.height(16.dp))
             TextButton(onClick = onDone) {
                 Text(stringResource(R.string.onboarding_model_skip))

@@ -41,6 +41,20 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    fun cancelDownload() {
+        viewModelScope.launch {
+            modelDownloadRepository.cancelDownload()
+        }
+    }
+
+    fun retryDownload() {
+        viewModelScope.launch {
+            modelDownloadRepository.cancelDownload()
+            kotlinx.coroutines.delay(500)
+            modelDownloadRepository.startDownload()
+        }
+    }
+
     fun complete() {
         viewModelScope.launch {
             settingsRepository.setOnboardingComplete()
