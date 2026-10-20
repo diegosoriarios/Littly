@@ -7,6 +7,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v0.1.0)'
+        required: false
+        type: string
 
 jobs:
   build:
@@ -45,10 +50,34 @@ jobs:
         name: app-release
         path: app/build/outputs/apk/release/app-release.apk
         
+    - name: Determine Release Tag
+      id: tag
+      run: |
+        if [ "${{ github.event_name }}" == "release" ]; then
+          echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" == "push" ]; then
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=v0.0.0-$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+        fi
+        
     - name: Upload APK to Release
-      if: github.event_name == 'release'
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ steps.tag.outputs.tag }}
         files: app/build/outputs/apk/release/app-release.apk
+        name: Release ${{ steps.tag.outputs.tag }}
+        body: |
+          Automated release build for ${{ steps.tag.outputs.tag }}
+          
+          **APK Details:**
+          - Signed release build
+          - Built with GitHub Actions
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
