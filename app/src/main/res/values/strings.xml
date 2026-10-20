@@ -1,0 +1,109 @@
+<resources>
+    <string name="app_name">Littly</string>
+    <string name="tagline">Little by little</string>
+
+    <string name="cd_back">Back</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_mark_done">Mark done</string>
+    <string name="cd_unarchive">Restore habit</string>
+    <string name="cd_archive">Archive habit</string>
+    <string name="cd_edit_habit">Edit habit</string>
+    <string name="cd_color_option">Color %1$d</string>
+
+    <string name="habits_empty_title">Plant your first habit</string>
+    <string name="habits_empty_body">Your habits will live here — one small step at a time.</string>
+    <string name="add_habit">Add habit</string>
+    <string name="habit_start_today">Start your streak today</string>
+    <string name="archived_header">Archived</string>
+
+    <string name="habit_detail_title">Habit</string>
+    <string name="detail_mark_done">Mark done today</string>
+    <string name="detail_done_today">Done for today</string>
+    <string name="stat_current">Current</string>
+    <string name="stat_longest">Longest</string>
+    <string name="stat_total">Total</string>
+    <string name="history_header">Last 8 weeks</string>
+    <string name="history_empty">Your history will grow here, day by day.</string>
+    <string name="legend_done">Done</string>
+    <string name="legend_goal">Goal day</string>
+    <string name="ideas_header">Idea for today</string>
+    <string name="ideas_thinking">Thinking…</string>
+    <string name="ideas_new_idea">New idea</string>
+    <string name="ideas_empty_hint">Tap below for a fresh idea tailored to this habit.</string>
+    <string name="ideas_error">Couldn’t come up with something new — try again.</string>
+    <string name="ideas_recent_header">Recent ideas</string>
+
+    <string name="new_habit_title">New habit</string>
+    <string name="edit_habit_title">Edit habit</string>
+    <string name="label_habit_name">Habit name</string>
+    <string name="hint_habit_name">e.g. draw more</string>
+    <string name="section_goal_days">Goal days</string>
+    <string name="section_reminder">Daily reminder</string>
+    <string name="section_color">Color</string>
+    <string name="reminder_title">Gentle nudge</string>
+    <string name="reminder_on_goal_days">On goal days</string>
+    <string name="reminder_off">Off</string>
+    <string name="save_habit">Save habit</string>
+
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_mark_done">Mark done</string>
+    <string name="action_give_another">Give me another</string>
+
+    <string name="reminder_default_body">A tiny step awaits: %1$s</string>
+    <string name="channel_reminders_name">Habit reminders</string>
+    <string name="channel_reminders_description">Gentle nudges for your habits</string>
+    <string name="channel_downloads_name">Downloads</string>
+    <string name="channel_downloads_description">Progress of the offline idea engine download</string>
+
+    <string name="onboarding_welcome_title">Welcome to Littly</string>
+    <string name="onboarding_welcome_body">Track tiny habits, celebrate small wins, and let little by little become a lot.</string>
+    <string name="onboarding_reminders_title">Gentle nudges</string>
+    <string name="onboarding_reminders_body">Littly can remind you at the right moment on your goal days. You choose the habits, the days, and the time.</string>
+    <string name="onboarding_allow_notifications">Allow notifications</string>
+    <string name="onboarding_battery_title">On-time reminders</string>
+    <string name="onboarding_battery_body">Some phones pause apps to save battery. Letting Littly run in the background keeps your reminders right on time.</string>
+    <string name="onboarding_battery_action">Allow background activity</string>
+    <string name="onboarding_battery_oem_note">On Xiaomi, Samsung and some other phones you may also need to enable “Autostart” in the system settings.</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_done">Get started</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notifications_allowed">Allowed — reminders can appear</string>
+    <string name="settings_notifications_blocked">Blocked — reminders won’t appear</string>
+    <string name="settings_exact_title">Precise reminders</string>
+    <string name="settings_exact_allowed">Reminders arrive exactly on time</string>
+    <string name="settings_exact_blocked">Reminders may drift by a few minutes</string>
+    <string name="settings_battery_title">Battery optimization</string>
+    <string name="settings_battery_allowed">Exempted — nothing to do</string>
+    <string name="settings_battery_blocked">Android may delay reminders to save power</string>
+    <string name="settings_allow">Allow</string>
+    <string name="settings_open_settings">Open settings</string>
+    <string name="settings_about_version">Little by little · v%1$s</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_reminders">Reminders</string>
+    <string name="settings_reminders_title">Gentle nudges</string>
+    <string name="settings_reminders_subtitle">Pick a moment for each habit to check in</string>
+    <string name="settings_section_idea_engine">Idea engine</string>
+    <string name="settings_idea_engine_title">Offline ideas</string>
+    <string name="settings_idea_engine_subtitle">A small on-device model that suggests fresh ideas for your habits</string>
+    <string name="settings_model_title">Offline model</string>
+    <string name="settings_model_not_downloaded">Not downloaded</string>
+    <string name="settings_model_downloaded">Downloaded (%1$d MB)</string>
+    <string name="settings_model_failed">Download failed</string>
+    <string name="settings_model_download">Download model</string>
+    <string name="settings_model_cancel">Cancel download</string>
+    <string name="settings_model_delete">Delete</string>
+
+    <string name="widget_description">View and complete your habits from the home screen</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_about_title">Littly</string>
+    <string name="settings_about_subtitle">Little by little</string>
+
+    <plurals name="habit_total_times">
+        <item quantity="one">Once so far</item>
+        <item quantity="other">%d times so far</item>
+    </plurals>
+</resources>

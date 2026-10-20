@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget colors - Dark theme -->
+    <color name="widget_background">#FF1C1B1F</color>
+    <color name="widget_title">#FFE6E1E5</color>
+    <color name="widget_text">#FFE6E1E5</color>
+    <color name="widget_subtitle">#FFCAC4D0</color>
+    <color name="widget_accent">#FFD0BCFF</color>
+    <color name="widget_on_accent">#FF381E72</color>
+    <color name="widget_checkbox_empty">#FF49454F</color>
+</resources>
