@@ -40,27 +40,47 @@ class ModelDownloadWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(5, TimeUnit.MINUTES)
-        .writeTimeout(5, TimeUnit.MINUTES)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
         .build()
     private var downloadJob: Job? = null
 
     override suspend fun doWork(): Result {
-        val modelUrl = inputData.getString(KEY_MODEL_URL) ?: return Result.failure()
-        val destinationPath = inputData.getString(KEY_DESTINATION_PATH) ?: return Result.failure()
+        Log.d("ModelDownload", "=== Worker doWork() STARTED ===")
+        
+        val modelUrl = inputData.getString(KEY_MODEL_URL)
+        val destinationPath = inputData.getString(KEY_DESTINATION_PATH)
+        
+        if (modelUrl == null) {
+            Log.e("ModelDownload", "ERROR: modelUrl is null")
+            return Result.failure()
+        }
+        if (destinationPath == null) {
+            Log.e("ModelDownload", "ERROR: destinationPath is null")
+            return Result.failure()
+        }
 
         Log.d("ModelDownload", "Starting download from: $modelUrl")
         Log.d("ModelDownload", "Destination: $destinationPath")
 
-        setForeground(createForegroundInfo(0, null))
+        try {
+            setForeground(createForegroundInfo(0, null))
+            Log.d("ModelDownload", "Foreground service set up successfully")
+        } catch (e: Exception) {
+            Log.e("ModelDownload", "ERROR: Failed to set foreground service", e)
+            return Result.failure()
+        }
 
         return withContext(ioDispatcher) {
             try {
+                Log.d("ModelDownload", "Starting download process in IO dispatcher")
+                
                 val file = File(destinationPath)
                 file.parentFile?.mkdirs()
 
                 val existingSize = if (file.exists()) file.length() else 0L
+                Log.d("ModelDownload", "Existing file size: $existingSize bytes")
 
                 val request = Request.Builder().apply {
                     url(modelUrl)
@@ -69,18 +89,26 @@ class ModelDownloadWorker @AssistedInject constructor(
                     }
                 }.build()
 
-                val response = client.newCall(request).execute()
+                Log.d("ModelDownload", "Making HTTP request...")
+                val response = try {
+                    client.newCall(request).execute()
+                } catch (e: Exception) {
+                    Log.e("ModelDownload", "ERROR: HTTP request failed", e)
+                    return@withContext Result.failure()
+                }
+
+                Log.d("ModelDownload", "HTTP response received. Code: ${response.code}")
 
                 if (!response.isSuccessful && response.code != 206) {
                     Log.e("ModelDownload", "Download failed with response code: ${response.code}")
                     response.close()
-                    return@withContext Result.retry()
+                    return@withContext Result.failure()
                 }
 
                 val body = response.body ?: run {
                     Log.e("ModelDownload", "Response body is null")
                     response.close()
-                    return@withContext Result.retry()
+                    return@withContext Result.failure()
                 }
 
                 val contentLength = body.contentLength()
@@ -100,7 +128,8 @@ class ModelDownloadWorker @AssistedInject constructor(
                 val buffer = ByteArray(8192)
                 var lastNotificationUpdate = 0L
 
-                // Report initial progress immediately
+                Log.d("ModelDownload", "Starting download loop...")
+                
                 setProgressAsync(
                     Data.Builder()
                         .putLong("bytes_downloaded", bytesDownloaded)
@@ -110,7 +139,13 @@ class ModelDownloadWorker @AssistedInject constructor(
                 )
 
                 while (!isStopped) {
-                    val read = source.read(buffer, 0, buffer.size)
+                    val read = try {
+                        source.read(buffer, 0, buffer.size)
+                    } catch (e: Exception) {
+                        Log.e("ModelDownload", "ERROR: Failed to read from source", e)
+                        break
+                    }
+                    
                     if (read == -1) break
 
                     sink.write(buffer, 0, read)
@@ -133,6 +168,10 @@ class ModelDownloadWorker @AssistedInject constructor(
                                 .build()
                         )
                         lastNotificationUpdate = now
+                        
+                        if (bytesDownloaded % (1024 * 1024) < 8192) {
+                            Log.d("ModelDownload", "Progress: ${bytesDownloaded / (1024 * 1024)}MB downloaded")
+                        }
                     }
                 }
 
@@ -142,13 +181,15 @@ class ModelDownloadWorker @AssistedInject constructor(
                 response.close()
 
                 setForeground(createForegroundInfo(bytesDownloaded, totalBytes))
-                Log.d("ModelDownload", "Download completed successfully")
+                Log.d("ModelDownload", "Download completed successfully. Total: $bytesDownloaded bytes")
                 Result.success()
             } catch (e: Exception) {
-                Log.e("ModelDownload", "Download failed", e)
+                Log.e("ModelDownload", "ERROR: Download failed with exception", e)
                 if (isStopped) {
+                    Log.d("ModelDownload", "Worker was stopped by user")
                     Result.failure()
                 } else {
+                    Log.d("ModelDownload", "Will retry due to transient error")
                     Result.retry()
                 }
             }

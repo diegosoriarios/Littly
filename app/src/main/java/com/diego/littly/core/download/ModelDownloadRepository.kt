@@ -42,27 +42,66 @@ class ModelDownloadRepository @Inject constructor(
     }
 
     private fun observeWorkManager() {
+        var downloadStartTime = 0L
+        var lastBytesDownloaded = 0L
+        var lastProgressTime = 0L
+        
         scope.launch {
             workManager.getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME).collect { workInfos ->
                 val workInfo = workInfos.firstOrNull()
+                
+                android.util.Log.d("ModelDownload", "WorkManager state update: ${workInfo?.state}")
+                
                 _downloadState.value = when (workInfo?.state) {
                     WorkInfo.State.ENQUEUED, WorkInfo.State.RUNNING -> {
                         val progress = workInfo.progress.getInt("progress", 0)
                         val bytesDownloaded = workInfo.progress.getLong("bytes_downloaded", 0)
                         val totalBytes = workInfo.progress.getLong("total_bytes", 0).takeIf { it > 0 }
-                        if (totalBytes != null) {
+                        
+                        if (bytesDownloaded != lastBytesDownloaded) {
+                            lastBytesDownloaded = bytesDownloaded
+                            lastProgressTime = System.currentTimeMillis()
+                        }
+                        
+                        if (downloadStartTime == 0L) {
+                            downloadStartTime = System.currentTimeMillis()
+                            lastProgressTime = downloadStartTime
+                        }
+                        
+                        val timeSinceStart = System.currentTimeMillis() - downloadStartTime
+                        val timeSinceProgress = System.currentTimeMillis() - lastProgressTime
+                        
+                        if (timeSinceStart > 15000 && bytesDownloaded == 0L) {
+                            android.util.Log.e("ModelDownload", "Download stuck for 15 seconds with no progress, failing")
+                            ModelDownloadState.Failed("Download stuck. Please check your connection and try again.")
+                        } else if (totalBytes != null) {
                             ModelDownloadState.Downloading(bytesDownloaded, totalBytes)
                         } else {
                             ModelDownloadState.Downloading(bytesDownloaded, null)
                         }
                     }
-                    WorkInfo.State.SUCCEEDED -> ModelDownloadState.Completed
-                    WorkInfo.State.FAILED -> ModelDownloadState.Failed("Download failed")
-                    WorkInfo.State.CANCELLED -> ModelDownloadState.Idle
+                    WorkInfo.State.SUCCEEDED -> {
+                        downloadStartTime = 0L
+                        lastBytesDownloaded = 0L
+                        ModelDownloadState.Completed
+                    }
+                    WorkInfo.State.FAILED -> {
+                        android.util.Log.e("ModelDownload", "WorkManager reported FAILED state")
+                        downloadStartTime = 0L
+                        lastBytesDownloaded = 0L
+                        ModelDownloadState.Failed("Download failed")
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        downloadStartTime = 0L
+                        lastBytesDownloaded = 0L
+                        ModelDownloadState.Idle
+                    }
                     WorkInfo.State.BLOCKED -> ModelDownloadState.WaitingForNetwork
                     null -> if (modelLocator.isModelPresent()) {
                         ModelDownloadState.Completed
                     } else {
+                        downloadStartTime = 0L
+                        lastBytesDownloaded = 0L
                         ModelDownloadState.Idle
                     }
                 }
@@ -75,6 +114,8 @@ class ModelDownloadRepository @Inject constructor(
             return@withContext Result.success(Unit)
         }
 
+        android.util.Log.d("ModelDownload", "Starting download process...")
+        
         val destinationPath = modelLocator.modelFile.absolutePath
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -96,6 +137,8 @@ class ModelDownloadRepository @Inject constructor(
             ExistingWorkPolicy.REPLACE,
             workRequest
         )
+
+        android.util.Log.d("ModelDownload", "Work enqueued successfully")
 
         Result.success(Unit)
     }
@@ -124,6 +167,31 @@ class ModelDownloadRepository @Inject constructor(
     fun getModelSize(): Long {
         val file = modelLocator.modelFile
         return if (file.exists()) file.length() else 0
+    }
+
+    suspend fun getWorkStatus(): String = withContext(ioDispatcher) {
+        val workInfo = workManager.getWorkInfosForUniqueWork(ModelDownloadWorker.WORK_NAME).get().firstOrNull()
+        return@withContext when {
+            workInfo == null -> "NO_WORK"
+            workInfo.state == WorkInfo.State.ENQUEUED -> "ENQUEUED"
+            workInfo.state == WorkInfo.State.RUNNING -> "RUNNING"
+            workInfo.state == WorkInfo.State.SUCCEEDED -> "SUCCEEDED"
+            workInfo.state == WorkInfo.State.FAILED -> "FAILED"
+            workInfo.state == WorkInfo.State.CANCELLED -> "CANCELLED"
+            workInfo.state == WorkInfo.State.BLOCKED -> "BLOCKED"
+            else -> "UNKNOWN"
+        }
+    }
+
+    suspend fun checkAndRecoverStuckDownload() = withContext(ioDispatcher) {
+        val workInfo = workManager.getWorkInfosForUniqueWork(ModelDownloadWorker.WORK_NAME).get().firstOrNull()
+        
+        if (workInfo?.state == WorkInfo.State.ENQUEUED) {
+            val enqueueTime = workInfo.state.toString()
+            android.util.Log.w("ModelDownload", "Download stuck in ENQUEUED state, cancelling and will retry")
+            workManager.cancelUniqueWork(ModelDownloadWorker.WORK_NAME)
+            _downloadState.value = ModelDownloadState.Failed("Download stuck. Please try again.")
+        }
     }
 
     companion object {
