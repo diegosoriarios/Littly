@@ -311,7 +311,7 @@ private fun ModelDownloadPage(
             }
             is ModelDownloadState.Failed -> {
                 Text(
-                    text = stringResource(R.string.onboarding_model_failed),
+                    text = downloadState.error,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error
                 )

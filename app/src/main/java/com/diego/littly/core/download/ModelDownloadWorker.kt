@@ -68,8 +68,10 @@ class ModelDownloadWorker @AssistedInject constructor(
             setForeground(createForegroundInfo(0, null))
             Log.d("ModelDownload", "Foreground service set up successfully")
         } catch (e: Exception) {
-            Log.e("ModelDownload", "ERROR: Failed to set foreground service", e)
-            return Result.failure()
+            val errorMsg = "Failed to start foreground service: ${e.message}"
+            Log.e("ModelDownload", "ERROR: $errorMsg", e)
+            val outputData = Data.Builder().putString("error_message", errorMsg).build()
+            return Result.failure(outputData)
         }
 
         return withContext(ioDispatcher) {
@@ -90,25 +92,36 @@ class ModelDownloadWorker @AssistedInject constructor(
                 }.build()
 
                 Log.d("ModelDownload", "Making HTTP request...")
+                setProgressAsync(
+                    Data.Builder()
+                        .putLong("bytes_downloaded", 0)
+                        .putLong("total_bytes", 0)
+                        .putInt("progress", 0)
+                        .build()
+                )
+                
                 val response = try {
                     client.newCall(request).execute()
                 } catch (e: Exception) {
-                    Log.e("ModelDownload", "ERROR: HTTP request failed", e)
-                    return@withContext Result.failure()
+                    val errorMsg = "Network error: ${e.javaClass.simpleName}: ${e.message}"
+                    Log.e("ModelDownload", "ERROR: $errorMsg", e)
+                    return@withContext Result.retry()
                 }
 
                 Log.d("ModelDownload", "HTTP response received. Code: ${response.code}")
 
                 if (!response.isSuccessful && response.code != 206) {
-                    Log.e("ModelDownload", "Download failed with response code: ${response.code}")
+                    val errorMsg = "HTTP error ${response.code}: ${response.message}"
+                    Log.e("ModelDownload", "Download failed - $errorMsg")
+                    val outputData = Data.Builder().putString("error_message", errorMsg).build()
                     response.close()
-                    return@withContext Result.failure()
+                    return@withContext if (response.code in 500..599) Result.retry() else Result.failure(outputData)
                 }
 
                 val body = response.body ?: run {
-                    Log.e("ModelDownload", "Response body is null")
-                    response.close()
-                    return@withContext Result.failure()
+                    val errorMsg = "Response body is null"
+                    Log.e("ModelDownload", "ERROR: $errorMsg")
+                    return@withContext Result.retry()
                 }
 
                 val contentLength = body.contentLength()
@@ -187,9 +200,11 @@ class ModelDownloadWorker @AssistedInject constructor(
                 Log.e("ModelDownload", "ERROR: Download failed with exception", e)
                 if (isStopped) {
                     Log.d("ModelDownload", "Worker was stopped by user")
-                    Result.failure()
+                    val errorMsg = "Download cancelled by user"
+                    val outputData = Data.Builder().putString("error_message", errorMsg).build()
+                    Result.failure(outputData)
                 } else {
-                    Log.d("ModelDownload", "Will retry due to transient error")
+                    Log.d("ModelDownload", "Will retry due to transient error: ${e.message}")
                     Result.retry()
                 }
             }

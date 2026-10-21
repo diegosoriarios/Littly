@@ -339,7 +339,7 @@ private fun ModelManagementRow(
                                 stringResource(R.string.settings_model_downloaded, sizeMb)
                             }
                             is com.diego.littly.core.download.ModelDownloadState.Failed -> {
-                                stringResource(R.string.settings_model_failed)
+                                state.error
                             }
                             else -> stringResource(R.string.settings_model_not_downloaded)
                         },

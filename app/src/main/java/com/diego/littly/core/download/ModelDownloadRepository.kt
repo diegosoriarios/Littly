@@ -42,7 +42,7 @@ class ModelDownloadRepository @Inject constructor(
     }
 
     private fun observeWorkManager() {
-        var downloadStartTime = 0L
+        var runningStartTime = 0L
         var lastBytesDownloaded = 0L
         var lastProgressTime = 0L
         
@@ -53,8 +53,16 @@ class ModelDownloadRepository @Inject constructor(
                 android.util.Log.d("ModelDownload", "WorkManager state update: ${workInfo?.state}")
                 
                 _downloadState.value = when (workInfo?.state) {
-                    WorkInfo.State.ENQUEUED, WorkInfo.State.RUNNING -> {
-                        val progress = workInfo.progress.getInt("progress", 0)
+                    WorkInfo.State.ENQUEUED -> {
+                        val bytesDownloaded = workInfo.progress.getLong("bytes_downloaded", 0)
+                        val totalBytes = workInfo.progress.getLong("total_bytes", 0).takeIf { it > 0 }
+                        if (totalBytes != null) {
+                            ModelDownloadState.Downloading(bytesDownloaded, totalBytes)
+                        } else {
+                            ModelDownloadState.Downloading(bytesDownloaded, null)
+                        }
+                    }
+                    WorkInfo.State.RUNNING -> {
                         val bytesDownloaded = workInfo.progress.getLong("bytes_downloaded", 0)
                         val totalBytes = workInfo.progress.getLong("total_bytes", 0).takeIf { it > 0 }
                         
@@ -63,16 +71,16 @@ class ModelDownloadRepository @Inject constructor(
                             lastProgressTime = System.currentTimeMillis()
                         }
                         
-                        if (downloadStartTime == 0L) {
-                            downloadStartTime = System.currentTimeMillis()
-                            lastProgressTime = downloadStartTime
+                        if (runningStartTime == 0L) {
+                            runningStartTime = System.currentTimeMillis()
+                            lastProgressTime = runningStartTime
                         }
                         
-                        val timeSinceStart = System.currentTimeMillis() - downloadStartTime
-                        val timeSinceProgress = System.currentTimeMillis() - lastProgressTime
+                        val timeSinceRunning = System.currentTimeMillis() - runningStartTime
                         
-                        if (timeSinceStart > 15000 && bytesDownloaded == 0L) {
-                            android.util.Log.e("ModelDownload", "Download stuck for 15 seconds with no progress, failing")
+                        if (timeSinceRunning > 15000 && bytesDownloaded == 0L) {
+                            android.util.Log.e("ModelDownload", "Download stuck for 15 seconds in RUNNING state with no progress, cancelling worker")
+                            workManager.cancelUniqueWork(ModelDownloadWorker.WORK_NAME)
                             ModelDownloadState.Failed("Download stuck. Please check your connection and try again.")
                         } else if (totalBytes != null) {
                             ModelDownloadState.Downloading(bytesDownloaded, totalBytes)
@@ -81,18 +89,19 @@ class ModelDownloadRepository @Inject constructor(
                         }
                     }
                     WorkInfo.State.SUCCEEDED -> {
-                        downloadStartTime = 0L
+                        runningStartTime = 0L
                         lastBytesDownloaded = 0L
                         ModelDownloadState.Completed
                     }
                     WorkInfo.State.FAILED -> {
-                        android.util.Log.e("ModelDownload", "WorkManager reported FAILED state")
-                        downloadStartTime = 0L
+                        val errorMessage = workInfo.outputData.getString("error_message") ?: "Download failed"
+                        android.util.Log.e("ModelDownload", "WorkManager reported FAILED state: $errorMessage")
+                        runningStartTime = 0L
                         lastBytesDownloaded = 0L
-                        ModelDownloadState.Failed("Download failed")
+                        ModelDownloadState.Failed(errorMessage)
                     }
                     WorkInfo.State.CANCELLED -> {
-                        downloadStartTime = 0L
+                        runningStartTime = 0L
                         lastBytesDownloaded = 0L
                         ModelDownloadState.Idle
                     }
@@ -100,7 +109,7 @@ class ModelDownloadRepository @Inject constructor(
                     null -> if (modelLocator.isModelPresent()) {
                         ModelDownloadState.Completed
                     } else {
-                        downloadStartTime = 0L
+                        runningStartTime = 0L
                         lastBytesDownloaded = 0L
                         ModelDownloadState.Idle
                     }
