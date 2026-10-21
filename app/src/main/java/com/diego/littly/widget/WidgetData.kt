@@ -24,7 +24,8 @@ data class OverviewWidgetData(
     val bestStreak: Int,
     val bestStreakName: String?,
     val items: List<WidgetHabitItem>,
-    val hasActiveHabits: Boolean
+    val hasActiveHabits: Boolean,
+    val fallbackToAllHabits: Boolean
 )
 
 data class StreakWidgetData(
@@ -45,18 +46,21 @@ data class IdeaWidgetData(
 
 object WidgetDataSelector {
 
+    const val MAX_ITEMS = 5
+
     /**
      * The overview uses 48dp rows, a 48dp header, and 24dp of outer padding.
      * Returning fewer items keeps the widget readable at the launcher size.
      */
-    fun itemLimit(heightDp: Float): Int =
-        (((heightDp - 72f) / 48f).toInt()).coerceIn(0, 5)
+    fun itemLimit(heightDp: Float): Int {
+        if (!heightDp.isFinite() || heightDp <= 0f) return MAX_ITEMS
+        return (((heightDp - 72f) / 48f).toInt()).coerceIn(1, MAX_ITEMS)
+    }
 
     fun overview(
         habits: List<Habit>,
         logs: List<HabitLog>,
-        today: LocalDate,
-        heightDp: Float
+        today: LocalDate
     ): OverviewWidgetData {
         val active = habits.filter { it.archivedAt == null }
         val logsByHabit = logs.groupBy { it.habitId }
@@ -79,6 +83,8 @@ object WidgetDataSelector {
             val habit = active.first { it.id == item.habitId }
             Weekdays.isGoalDay(today, habit.goalDays)
         }
+        val hasDue = due.isNotEmpty()
+        val visible = if (hasDue) due else withProgress
         val best = withProgress.maxByOrNull { it.currentStreak }
         return OverviewWidgetData(
             dateLabel = today.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())),
@@ -86,8 +92,9 @@ object WidgetDataSelector {
             due = due.size,
             bestStreak = best?.currentStreak ?: 0,
             bestStreakName = best?.name,
-            items = due.take(5),
-            hasActiveHabits = active.isNotEmpty()
+            items = visible.take(MAX_ITEMS),
+            hasActiveHabits = active.isNotEmpty(),
+            fallbackToAllHabits = !hasDue && withProgress.isNotEmpty()
         )
     }
 

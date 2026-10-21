@@ -35,12 +35,14 @@ class WidgetDataSelectorTest {
         HabitLog(habitId, date, 0L, CompletionSource.APP)
 
     @Test
-    fun itemLimit_adaptsToAvailableHeight() {
-        assertEquals(0, WidgetDataSelector.itemLimit(100f))
+    fun itemLimit_alwaysShowsAtLeastOneItem() {
+        assertEquals(1, WidgetDataSelector.itemLimit(100f))
         assertEquals(1, WidgetDataSelector.itemLimit(120f))
         assertEquals(2, WidgetDataSelector.itemLimit(180f))
         assertEquals(3, WidgetDataSelector.itemLimit(230f))
         assertEquals(5, WidgetDataSelector.itemLimit(320f))
+        assertEquals(5, WidgetDataSelector.itemLimit(0f))
+        assertEquals(5, WidgetDataSelector.itemLimit(Float.NaN))
     }
 
     @Test
@@ -53,13 +55,13 @@ class WidgetDataSelectorTest {
         val data = WidgetDataSelector.overview(
             habits = listOf(daily, wednesdayOnly, mondayOnly),
             logs = logs,
-            today = today,
-            heightDp = 200f
+            today = today
         )
 
         assertEquals(2, data.due)
         assertEquals(1, data.completed)
         assertEquals(2, data.items.size)
+        assertFalse(data.fallbackToAllHabits)
         assertTrue(data.items.first { it.habitId == 1L }.completed)
         assertFalse(data.items.first { it.habitId == 2L }.completed)
     }
@@ -75,10 +77,44 @@ class WidgetDataSelectorTest {
             log(2, today)
         )
 
-        val data = WidgetDataSelector.overview(listOf(draw, read), logs, today, 200f)
+        val data = WidgetDataSelector.overview(listOf(draw, read), logs, today)
 
         assertEquals(3, data.bestStreak)
         assertEquals("read", data.bestStreakName)
+    }
+
+    @Test
+    fun overview_fallsBackToAllActiveHabitsOnARestDay() {
+        val mondayOnly = habit(1, "draw", setOf(DayOfWeek.MONDAY))
+        val fridayOnly = habit(2, "read", setOf(DayOfWeek.FRIDAY))
+        val logs = listOf(log(1, today.minusDays(2)))
+
+        val data = WidgetDataSelector.overview(
+            habits = listOf(mondayOnly, fridayOnly),
+            logs = logs,
+            today = today
+        )
+
+        assertEquals(0, data.due)
+        assertEquals(0, data.completed)
+        assertTrue(data.fallbackToAllHabits)
+        assertEquals(2, data.items.size)
+        assertEquals("draw", data.items.first().name)
+    }
+
+    @Test
+    fun overview_isEmptyWithoutActiveHabits() {
+        val archived = habit(1, "old habit").copy(archivedAt = today.minusDays(1))
+
+        val data = WidgetDataSelector.overview(
+            habits = listOf(archived),
+            logs = emptyList(),
+            today = today
+        )
+
+        assertFalse(data.hasActiveHabits)
+        assertFalse(data.fallbackToAllHabits)
+        assertTrue(data.items.isEmpty())
     }
 
     @Test

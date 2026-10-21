@@ -14,8 +14,8 @@ import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.first
 
 private val overviewSizes = setOf(
-    DpSize(180.dp, 110.dp),
-    DpSize(250.dp, 110.dp),
+    DpSize(180.dp, 120.dp),
+    DpSize(250.dp, 120.dp),
     DpSize(250.dp, 180.dp),
     DpSize(250.dp, 260.dp),
     DpSize(320.dp, 180.dp),
@@ -34,7 +34,7 @@ class LittlyWidget : GlanceAppWidget() {
         val habits = entryPoint.habitRepository().observeActiveHabits().first()
         val logs = entryPoint.habitRepository().observeAllLogs().first()
         val today = entryPoint.timeProvider().today()
-        val data = WidgetDataSelector.overview(habits, logs, today, heightDp = 0f)
+        val data = WidgetDataSelector.overview(habits, logs, today)
         val palette = resolvePalette(context, entryPoint.settingsRepository().themeMode.first())
         provideContent {
             OverviewWidgetContent(data, palette, context)

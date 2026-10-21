@@ -301,6 +301,7 @@
     <string name="widget_empty">Add a habit to get started</string>
     <string name="widget_done_today">%1$d of %2$d done</string>
     <string name="widget_rest_day">Rest day · nothing scheduled</string>
+    <string name="widget_no_due_today">No habits due today</string>
     <string name="widget_open_littly">Tap to open Littly</string>
     <string name="widget_day_streak">DAY STREAK</string>
     <string name="widget_streak_empty">Start a streak</string>

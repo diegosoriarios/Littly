@@ -39,7 +39,7 @@ import com.diego.littly.core.llm.ModelLocator
 @Composable
 fun OverviewWidgetContent(data: OverviewWidgetData, palette: WidgetPalette, context: Context) {
     val size = LocalSize.current
-    val limit = WidgetDataSelector.itemLimit(size.height.value)
+    val limit = WidgetDataSelector.itemLimit(size.height.value).coerceAtLeast(1)
     val items = data.items.take(limit)
     Column(
         modifier = GlanceModifier
@@ -86,7 +86,7 @@ fun OverviewWidgetContent(data: OverviewWidgetData, palette: WidgetPalette, cont
                 )
                 Text(
                     text = if (data.due == 0) {
-                        "${data.dateLabel} · ${context.getString(com.diego.littly.R.string.widget_rest_day)}"
+                        "${data.dateLabel} · ${context.getString(com.diego.littly.R.string.widget_no_due_today)}"
                     } else {
                         "${data.dateLabel} · ${context.getString(com.diego.littly.R.string.widget_done_today, data.completed, data.due)}"
                     },

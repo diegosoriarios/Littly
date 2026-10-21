@@ -60,10 +60,11 @@ Littly is a native Android habit tracker designed to feel warm, calm, and encour
 - Privacy information: habits, check-ins, and ideas stay in a local database; there is no account or analytics; the network is used only for an optional model download.
 
 ### Widgets
-- **Overview:** responsive today list with real completion state, best current streak, quick tap-to-complete, and graceful empty/rest states.
+- **Overview:** responsive list with real completion state, best current streak, quick tap-to-complete, and graceful empty states. If nothing is scheduled for today, it falls back to all active habits instead of showing an empty card.
 - **Streak:** best current habit streak with the habit name; opens that habit.
 - **Idea:** latest saved idea for an active habit, or honest “Ideas are off” / “No saved idea yet” states.
 - All widgets support light and dark palettes, follow Littly’s theme setting with System as the default, and use the same warm brand colors.
+- The widget picker includes light/dark preview images for all three widgets, with `previewLayout` used on Android 12+ and `previewImage` as the launcher fallback.
 - Widgets refresh after habit changes, completion toggles, idea generation, and theme changes. Android may still delay widget updates due to system host limits.
 
 **Widget previews:** the widget picker uses light/dark preview layouts. The three widget providers are `LittlyWidget`, `StreakWidget`, and `IdeaWidget`.
@@ -179,11 +180,11 @@ The unit suite covers:
 - DataStore name/theme settings
 
 Latest verification:
-- `testDebugUnitTest`: **111 tests passed**
+- `testDebugUnitTest`: **115 tests passed**
 - `assembleDebug`: **successful**
 - `lintDebug`: **successful, 0 errors**
 
-No physical device or emulator was connected during the final verification, so runtime widget rendering and notification delivery were not device-tested in this environment.
+No physical device or emulator was connected during the final verification, so runtime widget rendering and notification delivery were not device-tested in this environment. Widget metadata, preview assets, and preview layouts are covered by unit tests.
 
 ## Not implemented
 
