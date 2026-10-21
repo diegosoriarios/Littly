@@ -1,6 +1,10 @@
-# Littly
+<p align="center">
+  <img src="icon.svg" width="112" alt="Littly icon: a progress ring with a dot" />
+</p>
 
-**Little by little.**
+<h1 align="center">Littly</h1>
+
+<p align="center"><strong>Little by little.</strong></p>
 
 Littly is a native Android habit tracker designed to feel warm, calm, and encouraging. It works entirely offline for habit tracking and reminders. Optional idea suggestions can run through an on-device model, with a curated built-in fallback when the model is unavailable.
 
@@ -196,5 +200,7 @@ No physical device or emulator was connected during the final verification, so r
 - Server-side analytics
 
 ## Design references
+
+The app mark is the source SVG at `icon.svg`: a navy squircle, an orange progress ring, and a cream dot in the gap. The launcher icon is built from the same geometry for adaptive icons and legacy mipmaps.
 
 The visual references used for layout and hierarchy are in `docs/`. Nunito is bundled under the SIL Open Font License; see `docs/Nunito-OFL.txt`.

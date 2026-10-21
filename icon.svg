@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Littly logo: a progress ring with a dot">
+  <title>Littly</title>
+  <!-- Background: navy squircle -->
+  <rect width="512" height="512" rx="116" fill="#1E2B39"/>
+  <!-- Ring: ~280° arc, round caps -->
+  <path d="M 368.76 214.96 A 120 120 0 1 1 235.16 137.82"
+        fill="none" stroke="#CC6934" stroke-width="48" stroke-linecap="round"/>
+  <!-- Dot: sits in the gap, the next little step -->
+  <circle cx="316" cy="152.08" r="24" fill="#F5F0E7"/>
+</svg>
