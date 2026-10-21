@@ -5,11 +5,11 @@ on:
     types: [published]
   push:
     tags:
-      - 'v*'
+      - '[0-9]*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g., v0.1.0)'
+        description: 'Release tag (e.g., 0.1.0)'
         required: false
         type: string
 
@@ -63,7 +63,7 @@ jobs:
           if [ -n "${{ github.event.inputs.tag }}" ]; then
             echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
           else
-            echo "tag=v0.0.0-$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+            echo "tag=0.0.0-$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
           fi
         fi
         
