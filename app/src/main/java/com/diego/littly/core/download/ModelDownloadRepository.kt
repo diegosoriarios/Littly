@@ -93,7 +93,7 @@ class ModelDownloadRepository @Inject constructor(
 
         workManager.enqueueUniqueWork(
             ModelDownloadWorker.WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.REPLACE,
             workRequest
         )
 

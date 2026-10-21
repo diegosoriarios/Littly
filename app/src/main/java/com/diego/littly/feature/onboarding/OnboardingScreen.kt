@@ -243,6 +243,15 @@ private fun ModelDownloadPage(
                 ) {
                     Text("Retry")
                 }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(stringResource(R.string.onboarding_model_cancel))
+                }
             }
             is ModelDownloadState.Downloading -> {
                 val progress = if (downloadState.totalBytes != null && downloadState.totalBytes > 0) {
@@ -318,11 +327,9 @@ private fun ModelDownloadPage(
             }
         }
         
-        if (downloadState !is ModelDownloadState.Downloading && downloadState !is ModelDownloadState.WaitingForNetwork) {
-            Spacer(Modifier.height(16.dp))
-            TextButton(onClick = onDone) {
-                Text(stringResource(R.string.onboarding_model_skip))
-            }
+        Spacer(Modifier.height(16.dp))
+        TextButton(onClick = onDone) {
+            Text(stringResource(R.string.onboarding_model_skip))
         }
     }
 }
