@@ -21,29 +21,35 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun StreakBadge(
     count: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
     if (count <= 0) return
     Surface(
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.tertiaryContainer,
+        color = MaterialTheme.colorScheme.primaryContainer,
         modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(PaddingValues(horizontal = 10.dp, vertical = 4.dp))
+            modifier = Modifier.padding(
+                PaddingValues(
+                    horizontal = if (compact) 8.dp else 10.dp,
+                    vertical = if (compact) 3.dp else 4.dp
+                )
+            )
         ) {
             Icon(
                 imageVector = Icons.Rounded.LocalFireDepartment,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                modifier = Modifier.size(14.dp)
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(13.dp)
             )
-            Spacer(Modifier.width(2.dp))
+            Spacer(Modifier.width(3.dp))
             Text(
                 text = count.toString(),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }

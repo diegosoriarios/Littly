@@ -10,10 +10,12 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.diego.littly.core.domain.model.ThemeMode
 import com.diego.littly.core.domain.repository.SettingsRepository
 import com.diego.littly.core.download.ModelDownloadRepository
 import com.diego.littly.core.download.ModelDownloadState
 import com.diego.littly.core.notifications.ReminderPlanner
+import com.diego.littly.widget.WidgetUpdateHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -34,7 +36,8 @@ data class SettingsState(
     val isLoading: Boolean = true,
     val remindersMasterEnabled: Boolean = true,
     val ideaEngineEnabled: Boolean = true,
-    val dynamicColorEnabled: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val displayName: String = "",
     val permissions: PermissionSnapshot = PermissionSnapshot(),
     val modelDownloadState: ModelDownloadState = ModelDownloadState.Idle,
     val modelPresent: Boolean = false,
@@ -46,7 +49,8 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val settingsRepository: SettingsRepository,
     private val reminderPlanner: ReminderPlanner,
-    private val modelDownloadRepository: ModelDownloadRepository
+    private val modelDownloadRepository: ModelDownloadRepository,
+    private val widgetUpdateHelper: WidgetUpdateHelper
 ) : ViewModel() {
 
     private val permissions = MutableStateFlow(PermissionSnapshot())
@@ -55,16 +59,20 @@ class SettingsViewModel @Inject constructor(
         combine(
             settingsRepository.remindersMasterEnabled,
             settingsRepository.ideaEngineEnabled,
-            settingsRepository.dynamicColorEnabled,
-            permissions,
-            modelDownloadRepository.downloadState
-        ) { master, idea, dynamic, perms, downloadState ->
+            settingsRepository.themeMode,
+            settingsRepository.displayName,
+            permissions
+        ) { master, idea, theme, name, perms ->
             SettingsState(
                 isLoading = false,
                 remindersMasterEnabled = master,
                 ideaEngineEnabled = idea,
-                dynamicColorEnabled = dynamic,
-                permissions = perms,
+                themeMode = theme,
+                displayName = name,
+                permissions = perms
+            )
+        }.combine(modelDownloadRepository.downloadState) { state, downloadState ->
+            state.copy(
                 modelDownloadState = downloadState,
                 modelPresent = modelDownloadRepository.isModelPresent(),
                 modelSizeBytes = modelDownloadRepository.getModelSize()
@@ -93,30 +101,41 @@ class SettingsViewModel @Inject constructor(
     fun setIdeaEngineEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setIdeaEngineEnabled(enabled)
+            widgetUpdateHelper.updateAllWidgets()
         }
     }
 
-    fun setDynamicColorEnabled(enabled: Boolean) {
+    fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
-            settingsRepository.setDynamicColorEnabled(enabled)
+            settingsRepository.setThemeMode(mode)
+            widgetUpdateHelper.updateAllWidgets()
+        }
+    }
+
+    fun setDisplayName(name: String) {
+        viewModelScope.launch {
+            settingsRepository.setDisplayName(name)
         }
     }
 
     fun downloadModel() {
         viewModelScope.launch {
             modelDownloadRepository.startDownload()
+            widgetUpdateHelper.updateAllWidgets()
         }
     }
 
     fun cancelDownload() {
         viewModelScope.launch {
             modelDownloadRepository.cancelDownload()
+            widgetUpdateHelper.updateAllWidgets()
         }
     }
 
     fun deleteModel() {
         viewModelScope.launch {
             modelDownloadRepository.deleteModel()
+            widgetUpdateHelper.updateAllWidgets()
         }
     }
 }
@@ -135,26 +154,3 @@ fun snapshotPermissions(context: Context): PermissionSnapshot = PermissionSnapsh
         pm?.isIgnoringBatteryOptimizations(context.packageName) ?: false
     }
 )
-
-fun openExactAlarmSettings(context: Context) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-    runCatching {
-        context.startActivity(
-            Intent(
-                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                Uri.parse("package:${context.packageName}")
-            )
-        )
-    }
-}
-
-fun openAppNotificationSettings(context: Context) {
-    runCatching {
-        context.startActivity(
-            Intent(
-                Settings.ACTION_APP_NOTIFICATION_SETTINGS,
-                Uri.parse("package:${context.packageName}")
-            )
-        )
-    }
-}

@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey
 data class HabitEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
+    val description: String? = null,
+    val iconKey: String = "sparkles",
     val createdAtEpochDay: Long,
     val archivedAtEpochDay: Long? = null,
     val goalDaysBitmask: Int,

@@ -2,6 +2,7 @@ package com.diego.littly.navigation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.diego.littly.core.domain.model.ThemeMode
 import com.diego.littly.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,10 +18,18 @@ class MainViewModel @Inject constructor(
 
     val startDestination: StateFlow<String?> =
         settingsRepository.onboardingComplete
-            .map { complete -> if (complete) LittlyRoutes.HABITS else LittlyRoutes.ONBOARDING }
+            .map { complete -> if (complete) LittlyRoutes.TODAY else LittlyRoutes.ONBOARDING }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.Eagerly,
                 initialValue = null
+            )
+
+    val themeMode: StateFlow<ThemeMode> =
+        settingsRepository.themeMode
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = ThemeMode.SYSTEM
             )
 }

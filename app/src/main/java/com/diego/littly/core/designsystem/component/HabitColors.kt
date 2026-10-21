@@ -1,21 +1,23 @@
 package com.diego.littly.core.designsystem.component
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import com.diego.littly.core.designsystem.theme.HabitAccent
+import com.diego.littly.core.designsystem.theme.LittlyHabitPalette
 
-val LittlyHabitPalette = listOf(
-    Color(0xFFD96F4E),
-    Color(0xFF8FA968),
-    Color(0xFFD9A441),
-    Color(0xFF6FA3A0),
-    Color(0xFFA98BA3),
-    Color(0xFFC97B8E)
-)
-
-fun habitColor(colorIndex: Int): Color =
+fun habitAccent(colorIndex: Int): HabitAccent =
     LittlyHabitPalette[Math.floorMod(colorIndex, LittlyHabitPalette.size)]
 
-fun readableOn(color: Color): Color =
-    if (color.luminanceCompat() > 0.6f) Color(0xFF3A2A20) else Color.White
+fun habitColor(colorIndex: Int): Color = habitAccent(colorIndex).accent
 
-private fun Color.luminanceCompat(): Float =
-    0.299f * red + 0.587f * green + 0.114f * blue
+fun readableOn(background: Color): Color {
+    val light = Color(0xFFFFFCF8)
+    val dark = Color(0xFF1E2B39)
+    return if (contrastRatio(light, background) >= contrastRatio(dark, background)) light else dark
+}
+
+private fun contrastRatio(a: Color, b: Color): Float {
+    val lighter = maxOf(a.luminance(), b.luminance())
+    val darker = minOf(a.luminance(), b.luminance())
+    return (lighter + 0.05f) / (darker + 0.05f)
+}

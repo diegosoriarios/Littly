@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IdeaRepository {
     fun observeForHabit(habitId: Long, limit: Int = 50): Flow<List<Idea>>
+    fun observeLatest(limit: Int = 20): Flow<List<Idea>>
     suspend fun getRecentIdeas(habitId: Long, limit: Int = 10): List<Idea>
     suspend fun getRecentTexts(habitId: Long, limit: Int = 10): List<String>
     suspend fun saveGenerated(

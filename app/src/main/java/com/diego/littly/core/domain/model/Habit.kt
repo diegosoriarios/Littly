@@ -6,6 +6,8 @@ import java.time.LocalDate
 data class Habit(
     val id: Long = 0,
     val name: String,
+    val description: String? = null,
+    val iconKey: String = HabitIcon.default.key,
     val createdAt: LocalDate,
     val archivedAt: LocalDate? = null,
     val goalDays: Set<DayOfWeek>,

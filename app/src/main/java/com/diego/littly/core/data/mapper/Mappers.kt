@@ -13,6 +13,8 @@ import java.time.LocalDate
 fun HabitEntity.toDomain(): Habit = Habit(
     id = id,
     name = name,
+    description = description,
+    iconKey = iconKey,
     createdAt = LocalDate.ofEpochDay(createdAtEpochDay),
     archivedAt = archivedAtEpochDay?.let(LocalDate::ofEpochDay),
     goalDays = Weekdays.fromBitmask(goalDaysBitmask),
@@ -28,6 +30,8 @@ fun HabitEntity.toDomain(): Habit = Habit(
 fun Habit.toEntity(): HabitEntity = HabitEntity(
     id = id,
     name = name,
+    description = description,
+    iconKey = iconKey,
     createdAtEpochDay = createdAt.toEpochDay(),
     archivedAtEpochDay = archivedAt?.toEpochDay(),
     goalDaysBitmask = Weekdays.toBitmask(goalDays),

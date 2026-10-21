@@ -153,6 +153,33 @@ class StreakCalculatorTest {
         assertEquals(1, streak)
     }
 
+
+    @Test
+    fun `longest streak run reports start and end`() {
+        val completed = all(listOf(day(-10), day(-9), day(-8), day(-4), day(-3)))
+        val run = StreakCalculator.longestStreakRun(
+            completedDays = completed,
+            goalDays = WeekdaySets.daily,
+            today = monday,
+            createdAt = epoch
+        )
+        assertEquals(3, run.length)
+        assertEquals(day(-10), run.start)
+        assertEquals(day(-8), run.end)
+    }
+
+    @Test
+    fun `longest streak run ignores pending today`() {
+        val run = StreakCalculator.longestStreakRun(
+            completedDays = all(listOf(day(-2), day(-1))),
+            goalDays = WeekdaySets.daily,
+            today = monday,
+            createdAt = epoch
+        )
+        assertEquals(2, run.length)
+        assertEquals(day(-1), run.end)
+    }
+
     private object WeekdaySets {
         val daily: Set<DayOfWeek> = DayOfWeek.entries.toSet()
     }

@@ -47,13 +47,16 @@ class ReminderPlannerTest {
         override val onboardingComplete: Flow<Boolean> = MutableStateFlow(true)
         override val ideaEngineEnabled: Flow<Boolean> = MutableStateFlow(true)
         override val wifiOnlyDownload: Flow<Boolean> = MutableStateFlow(true)
-        override val dynamicColorEnabled: Flow<Boolean> = MutableStateFlow(false)
+        override val themeMode: Flow<com.diego.littly.core.domain.model.ThemeMode> =
+            MutableStateFlow(com.diego.littly.core.domain.model.ThemeMode.SYSTEM)
+        override val displayName: Flow<String> = MutableStateFlow("")
         override val remindersMasterEnabled: Flow<Boolean> = master
 
         override suspend fun setOnboardingComplete() = Unit
         override suspend fun setIdeaEngineEnabled(enabled: Boolean) = Unit
         override suspend fun setWifiOnlyDownload(enabled: Boolean) = Unit
-        override suspend fun setDynamicColorEnabled(enabled: Boolean) = Unit
+        override suspend fun setThemeMode(mode: com.diego.littly.core.domain.model.ThemeMode) = Unit
+        override suspend fun setDisplayName(name: String) = Unit
         override suspend fun setRemindersMasterEnabled(enabled: Boolean) {
             master.value = enabled
         }
@@ -75,7 +78,9 @@ class ReminderPlannerTest {
             name: String,
             goalDays: Set<DayOfWeek>,
             reminder: Reminder,
-            colorIndex: Int
+            colorIndex: Int,
+            description: String?,
+            iconKey: String
         ): Long = error("not used")
 
         override suspend fun updateHabit(habit: Habit) = error("not used")

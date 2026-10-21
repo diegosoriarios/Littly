@@ -5,8 +5,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.diego.littly.core.designsystem.theme.LittlyTheme
+import com.diego.littly.core.domain.model.ThemeMode
 import com.diego.littly.core.domain.usecase.IdeaQueueFiller
 import com.diego.littly.core.llm.ModelLocator
 import com.diego.littly.core.navigation.DeepLink
@@ -30,8 +37,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         processIntent(intent)
         setContent {
-            LittlyTheme {
-                LittlyAppRoot()
+            val mainViewModel: com.diego.littly.navigation.MainViewModel = hiltViewModel()
+            val themeMode by mainViewModel.themeMode.collectAsStateWithLifecycle()
+            val darkTheme = when (themeMode) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            SideEffect {
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+            LittlyTheme(themeMode = themeMode) {
+                LittlyAppRoot(viewModel = mainViewModel)
             }
         }
     }

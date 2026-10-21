@@ -7,6 +7,7 @@ import com.diego.littly.core.llm.HabitClassifier
 import com.diego.littly.core.llm.IdeaEvent
 import com.diego.littly.core.llm.IdeaGenerator
 import com.diego.littly.core.llm.IdeaRequest
+import com.diego.littly.widget.WidgetUpdateHelper
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.flow
 class GenerateHabitIdeas @Inject constructor(
     private val habitRepository: HabitRepository,
     private val ideaRepository: IdeaRepository,
-    private val ideaGenerator: IdeaGenerator
+    private val ideaGenerator: IdeaGenerator,
+    private val widgetUpdateHelper: WidgetUpdateHelper
 ) {
 
     operator fun invoke(habitId: Long): Flow<IdeaEvent> = flow {
@@ -35,6 +37,7 @@ class GenerateHabitIdeas @Inject constructor(
             when (event) {
                 is IdeaEvent.Completed -> {
                     ideaRepository.saveGenerated(habitId, category, event.model, event.ideas)
+                    widgetUpdateHelper.updateAllWidgets()
                     emit(event)
                 }
                 else -> emit(event)

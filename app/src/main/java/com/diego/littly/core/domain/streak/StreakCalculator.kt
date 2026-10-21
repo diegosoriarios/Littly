@@ -4,6 +4,21 @@ import com.diego.littly.core.domain.model.Weekdays
 import java.time.DayOfWeek
 import java.time.LocalDate
 
+/**
+ * Streak rule:
+ * - Only goal days participate in a streak.
+ * - A completed goal day extends the streak.
+ * - A non-goal day neither extends nor breaks it.
+ * - A still-pending today does not break the streak.
+ * - Any missed past goal day breaks it.
+ * - An empty goal-day set means every day is a goal day.
+ */
+data class StreakRun(
+    val length: Int = 0,
+    val start: LocalDate? = null,
+    val end: LocalDate? = null
+)
+
 object StreakCalculator {
 
     fun currentStreak(
@@ -33,18 +48,30 @@ object StreakCalculator {
         goalDays: Set<DayOfWeek>,
         today: LocalDate,
         createdAt: LocalDate
-    ): Int {
-        if (today.isBefore(createdAt)) return 0
-        var best = 0
-        var run = 0
+    ): Int = longestStreakRun(completedDays, goalDays, today, createdAt).length
+
+    fun longestStreakRun(
+        completedDays: Set<LocalDate>,
+        goalDays: Set<DayOfWeek>,
+        today: LocalDate,
+        createdAt: LocalDate
+    ): StreakRun {
+        if (today.isBefore(createdAt)) return StreakRun()
+        var best = StreakRun()
+        var runLength = 0
+        var runStart: LocalDate? = null
         var date = createdAt
         while (!date.isAfter(today)) {
             if (Weekdays.isGoalDay(date, goalDays)) {
                 if (date in completedDays) {
-                    run++
-                    if (run > best) best = run
+                    if (runLength == 0) runStart = date
+                    runLength++
+                    if (runLength > best.length) {
+                        best = StreakRun(runLength, runStart, date)
+                    }
                 } else if (date != today) {
-                    run = 0
+                    runLength = 0
+                    runStart = null
                 }
             }
             date = date.plusDays(1)

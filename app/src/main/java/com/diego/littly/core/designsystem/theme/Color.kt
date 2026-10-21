@@ -1,57 +1,143 @@
 package com.diego.littly.core.designsystem.theme
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-val PrimaryLight = Color(0xFF8F4B38)
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFFFDBCF)
-val OnPrimaryContainerLight = Color(0xFF3A0B01)
-val SecondaryLight = Color(0xFF5D6142)
-val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFE2E5BE)
-val OnSecondaryContainerLight = Color(0xFF1A1D07)
-val TertiaryLight = Color(0xFF7A5900)
-val OnTertiaryLight = Color(0xFFFFFFFF)
-val TertiaryContainerLight = Color(0xFFFFDEA6)
-val OnTertiaryContainerLight = Color(0xFF261A00)
-val ErrorLight = Color(0xFFBA1A1A)
-val OnErrorLight = Color(0xFFFFFFFF)
-val ErrorContainerLight = Color(0xFFFFDAD6)
-val OnErrorContainerLight = Color(0xFF410002)
-val BackgroundLight = Color(0xFFFFF8F6)
-val OnBackgroundLight = Color(0xFF231917)
-val SurfaceLight = Color(0xFFFFF8F6)
-val OnSurfaceLight = Color(0xFF231917)
-val SurfaceVariantLight = Color(0xFFF4DED6)
-val OnSurfaceVariantLight = Color(0xFF53433E)
-val OutlineLight = Color(0xFF85736D)
-val OutlineVariantLight = Color(0xFFD8C2BA)
-val SurfaceContainerLight = Color(0xFFFBF1ED)
-val SurfaceContainerHighLight = Color(0xFFF5EBE7)
+val Cream = Color(0xFFF5F0E7)
+val WarmSurface = Color(0xFFFFFBF5)
+val WarmSurfaceLow = Color(0xFFFCF7EF)
+val WarmSurfaceHigh = Color(0xFFF1E9DD)
+val WarmBorder = Color(0xFFEADCCB)
+val Navy = Color(0xFF1E2B39)
+val NavySoft = Color(0xFF2A3745)
+val SecondaryText = Color(0xFF6F6152)
+val MutedText = Color(0xFFB5A591)
+val Orange = Color(0xFFCC6934)
+val OrangeDeep = Color(0xFFB25527)
+val SoftOrange = Color(0xFFF5D9C7)
+val OnDark = Color(0xFFFFFCF8)
+val IdeaBackground = Color(0xFFFCF0D3)
+val IdeaBorder = Color(0xFFEED79E)
+val IdeaAccent = Color(0xFFD8AA35)
+val Success = Color(0xFF557A5F)
+val SuccessSoft = Color(0xFFDEE7D7)
 
-val PrimaryDark = Color(0xFFFFB59F)
-val OnPrimaryDark = Color(0xFF5A1A09)
-val PrimaryContainerDark = Color(0xFF78331F)
-val OnPrimaryContainerDark = Color(0xFFFFDBCF)
-val SecondaryDark = Color(0xFFC6C9A3)
-val OnSecondaryDark = Color(0xFF2E321B)
-val SecondaryContainerDark = Color(0xFF454930)
-val OnSecondaryContainerDark = Color(0xFFE2E5BE)
-val TertiaryDark = Color(0xFFF2BE48)
-val OnTertiaryDark = Color(0xFF412D00)
-val TertiaryContainerDark = Color(0xFF5D4300)
-val OnTertiaryContainerDark = Color(0xFFFFDEA6)
-val ErrorDark = Color(0xFFFFB4AB)
-val OnErrorDark = Color(0xFF690005)
-val ErrorContainerDark = Color(0xFF93000A)
-val OnErrorContainerDark = Color(0xFFFFDAD6)
-val BackgroundDark = Color(0xFF1B110E)
-val OnBackgroundDark = Color(0xFFF1DFDA)
-val SurfaceDark = Color(0xFF1B110E)
-val OnSurfaceDark = Color(0xFFF1DFDA)
-val SurfaceVariantDark = Color(0xFF53433E)
-val OnSurfaceVariantDark = Color(0xFFD8C2BB)
-val OutlineDark = Color(0xFFA08D86)
-val OutlineVariantDark = Color(0xFF53433E)
-val SurfaceContainerDark = Color(0xFF221915)
-val SurfaceContainerHighDark = Color(0xFF2D231F)
+val DarkBackground = Color(0xFF141A20)
+val DarkSurface = Color(0xFF1C242D)
+val DarkSurfaceLow = Color(0xFF182028)
+val DarkSurfaceHigh = Color(0xFF2A333D)
+val DarkBorder = Color(0xFF3D454E)
+val DarkOnSurface = Color(0xFFFFFCF8)
+val DarkSecondaryText = Color(0xFFC9BCAD)
+val DarkMutedText = Color(0xFF9D9285)
+val DarkOrange = Color(0xFFE88650)
+val DarkSoftOrange = Color(0xFF4E2B1B)
+val DarkIdeaBackground = Color(0xFF352B17)
+val DarkIdeaBorder = Color(0xFF5C4A22)
+val DarkIdeaAccent = Color(0xFFE8C15D)
+val DarkSuccess = Color(0xFF9CBCA2)
+val DarkSuccessSoft = Color(0xFF2D4634)
+val DarkNavyCard = Color(0xFF0E151C)
+val DarkNavyCardSoft = Color(0xFF1A232C)
+
+@Immutable
+data class HabitAccent(
+    val accent: Color,
+    val soft: Color,
+    val onSoft: Color
+)
+
+val HabitPink = HabitAccent(
+    accent = Color(0xFFE686A1),
+    soft = Color(0xFFFBE5E9),
+    onSoft = Navy
+)
+val HabitTeal = HabitAccent(
+    accent = Color(0xFF4DA3A6),
+    soft = Color(0xFFDDECE8),
+    onSoft = Navy
+)
+val HabitSage = HabitAccent(
+    accent = Color(0xFF6C9274),
+    soft = Color(0xFFDEE7D7),
+    onSoft = Navy
+)
+val HabitPeach = HabitAccent(
+    accent = Color(0xFFE99150),
+    soft = Color(0xFFF8E1CF),
+    onSoft = Navy
+)
+val HabitLavender = HabitAccent(
+    accent = Color(0xFF9B85CA),
+    soft = Color(0xFFEBE4F0),
+    onSoft = Navy
+)
+val HabitMustard = HabitAccent(
+    accent = Color(0xFFD6AA3B),
+    soft = Color(0xFFF2DFA8),
+    onSoft = Navy
+)
+
+val LittlyHabitPalette = listOf(
+    HabitPink,
+    HabitTeal,
+    HabitSage,
+    HabitPeach,
+    HabitLavender,
+    HabitMustard
+)
+
+@Immutable
+data class LittlyExtraColors(
+    val navyCard: Color,
+    val navyCardSoft: Color,
+    val onNavy: Color,
+    val onNavyMuted: Color,
+    val success: Color,
+    val successSoft: Color,
+    val onSuccess: Color,
+    val ideaBackground: Color,
+    val ideaBorder: Color,
+    val ideaAccent: Color,
+    val ideaLabel: Color,
+    val onIdea: Color,
+    val mutedText: Color,
+    val habitPalette: List<HabitAccent>,
+    val isDark: Boolean
+)
+
+val LightExtraColors = LittlyExtraColors(
+    navyCard = Navy,
+    navyCardSoft = NavySoft,
+    onNavy = OnDark,
+    onNavyMuted = Color(0xFFB9C1C9),
+    success = Success,
+    successSoft = SuccessSoft,
+    onSuccess = Color(0xFFFFFFFF),
+    ideaBackground = IdeaBackground,
+    ideaBorder = IdeaBorder,
+    ideaAccent = IdeaAccent,
+    ideaLabel = Color(0xFF8A6514),
+    onIdea = Navy,
+    mutedText = MutedText,
+    habitPalette = LittlyHabitPalette,
+    isDark = false
+)
+
+val DarkExtraColors = LittlyExtraColors(
+    navyCard = DarkNavyCard,
+    navyCardSoft = DarkNavyCardSoft,
+    onNavy = OnDark,
+    onNavyMuted = Color(0xFFAEB8C2),
+    success = DarkSuccess,
+    successSoft = DarkSuccessSoft,
+    onSuccess = Color(0xFF122016),
+    ideaBackground = DarkIdeaBackground,
+    ideaBorder = DarkIdeaBorder,
+    ideaAccent = DarkIdeaAccent,
+    ideaLabel = DarkIdeaAccent,
+    onIdea = Color(0xFFFFF4DA),
+    mutedText = DarkMutedText,
+    habitPalette = LittlyHabitPalette,
+    isDark = true
+)

@@ -1,174 +1,199 @@
-# Littly - Habit Tracker with AI-Powered Suggestions
+# Littly
 
-Littly is a native Android habit tracker that helps users build consistent habits through gentle reminders and AI-powered suggestions. The app uses an on-device language model to provide personalized, contextual ideas for each habit.
+**Little by little.**
 
-## Features
+Littly is a native Android habit tracker designed to feel warm, calm, and encouraging. It works entirely offline for habit tracking and reminders. Optional idea suggestions can run through an on-device model, with a curated built-in fallback when the model is unavailable.
 
-### Core Functionality
-- **Habit Management**: Create, edit, and track daily habits with customizable goal days
-- **Streak Tracking**: Visual streak tracking with goal day awareness
-- **Smart Reminders**: Configurable notifications with exact alarm support
-- **Habit Archiving**: Archive completed or inactive habits
+## What is implemented
 
-### AI-Powered Features
-- **On-Device LLM**: Uses Gemma 3 1B model for privacy-focused AI suggestions
-- **Contextual Ideas**: Get personalized suggestions based on habit category
-- **Smart Classification**: Automatic habit categorization (creative, reading, learning, fitness, mindfulness, social, productivity)
-- **Anti-Repeat Logic**: Avoids suggesting the same ideas repeatedly
+### Today
+- Date, time-aware greeting, optional display name, avatar, and reminder shortcut.
+- Navy summary card with the best current habit streak, today’s completion ring, and a real seven-day strip.
+- Habits scheduled for today with streak badges, recent activity dots, and accessible completion controls.
+- Saved idea card with truthfully labeled source (`On-device` or `Built-in`), open-habit action, and “Another idea” deep link.
+- Empty, rest-day, all-done, loading, and error states.
+- Floating add-habit action.
 
-### User Experience
-- **Material Design 3**: Modern, adaptive UI with dynamic colors
-- **Dark Mode**: Full dark theme support
-- **Home Screen Widget**: Quick habit completion from the home screen
-- **Battery Optimization**: Smart background processing with WorkManager
+### Habits
+- Active and paused counts, large page title, and all-habit reset pill.
+- Reminder-time filters: All day, Morning, Afternoon, Evening, and Paused.
+- Responsive two-column grid that drops to one column on very narrow screens or large font scales.
+- Stable accent and icon per habit, real current streak, recent activity dots, and a navy “best” card.
+- Paused habits can be restored. Long names wrap without clipping.
+- Dashed new-habit card and floating add action.
+
+### Habit Detail
+- Back, edit, archive, and restore actions with confirmation.
+- Navy summary card with habit identity, schedule, current streak, all-time best, and real 30-day completion rate.
+- Three-month binary heatmap. A habit only stores completed/not-completed data, so intensity levels are deliberately not implied.
+- Idea card with generation states, source labels, recent ideas, and a disabled state when ideas are turned off.
+- Prominent completion button and an accurate offline/fallback explanation.
+
+### Stats
+- Month selector with previous/next navigation and future months disabled.
+- Monthly calendar heatmap where intensity expresses the real fraction of due habits completed that day.
+- Completion ring, actual month-over-month change when available, and total check-ins since the first stored completion.
+- Six-month completion trend drawn from stored data.
+- All-time best streak with the habit name and date range.
+- New-user and insufficient-history states.
+
+### Add / Edit Habit
+- Free-text name and optional description.
+- Stable icon and accent-color pickers.
+- Goal-day selection.
+- Optional reminder with time and independent reminder days.
+- Inline validation and helpful feedback.
+- Notification permission is requested only in context, when reminders are enabled.
+- Editing preserves completion history, creation date, sort order, and archive state.
+
+### Onboarding
+- Four branded pages: optional name, reminders, background reliability, and optional ideas model.
+- Optional display name saved on-device and editable later in Profile.
+- Fully skippable. No unexpected notification request on launch.
+- Model download is clearly optional and can be skipped, cancelled, retried, or completed.
+
+### Profile / Settings
+- Optional display name.
+- System / Light / Dark theme preference.
+- Reminder master switch, notification permission status, exact-alarm status, and battery-optimization guidance.
+- Idea-engine toggle with model status, download progress, cancel, retry, and delete.
+- Privacy information: habits, check-ins, and ideas stay in a local database; there is no account or analytics; the network is used only for an optional model download.
+
+### Widgets
+- **Overview:** responsive today list with real completion state, best current streak, quick tap-to-complete, and graceful empty/rest states.
+- **Streak:** best current habit streak with the habit name; opens that habit.
+- **Idea:** latest saved idea for an active habit, or honest “Ideas are off” / “No saved idea yet” states.
+- All widgets support light and dark palettes, follow Littly’s theme setting with System as the default, and use the same warm brand colors.
+- Widgets refresh after habit changes, completion toggles, idea generation, and theme changes. Android may still delay widget updates due to system host limits.
+
+**Widget previews:** the widget picker uses light/dark preview layouts. The three widget providers are `LittlyWidget`, `StreakWidget`, and `IdeaWidget`.
+
+## Streak rule
+
+- Only goal days participate in a streak.
+- A completed goal day extends the streak.
+- A non-goal day neither extends nor breaks it.
+- A still-pending **today** does not break the streak.
+- Any missed past goal day breaks it.
+- An empty goal-day set means every day is a goal day.
+
+The current streak can therefore be non-zero before today’s check-in. This rule is shared by the habit cards, Today hero, Stats, and widgets. The all-time best streak also stores its start and end dates.
 
 ## Architecture
 
-### Tech Stack
-- **Language**: Kotlin 2.2.10
-- **UI**: Jetpack Compose with Material 3
-- **Architecture**: MVVM with Repository pattern
-- **Database**: Room for local persistence
-- **DI**: Hilt for dependency injection
-- **Background Processing**: WorkManager for scheduled tasks
-- **Notifications**: AlarmManager for precise reminders
-- **LLM Integration**: MediaPipe for on-device inference
+- **Kotlin** with **Jetpack Compose** and **Material 3**
+- **Hilt** dependency injection
+- **Room** for habits, completion logs, and idea history
+- **DataStore** for settings
+- **Kotlin Coroutines + Flow** for observable state
+- **Jetpack Glance** for the three widgets
+- **AlarmManager + BroadcastReceivers** for local reminders, with reboot rescheduling
+- **MediaPipe GenAI** for the optional on-device Qwen3-0.6B model
+- MVVM presentation layer with repositories and domain use cases
 
-### Project Structure
+### Project structure
+
 ```
 app/src/main/java/com/diego/littly/
 ├── core/
-│   ├── common/          # Shared utilities and base classes
-│   ├── data/            # Repository implementations
-│   ├── database/        # Room entities, DAOs, and database
-│   ├── designsystem/    # Theme, colors, typography, components
-│   ├── domain/          # Business logic and use cases
-│   ├── download/        # Model download management
-│   ├── llm/             # LLM integration and idea generation
-│   ├── navigation/      # Deep linking and navigation state
-│   └── notifications/   # Notification and alarm scheduling
+│   ├── data/            # Repository implementations, mappers, settings
+│   ├── database/        # Room entities, DAOs, migrations
+│   ├── designsystem/    # Tokens, Nunito typography, shared components, previews
+│   ├── domain/          # Models, repositories, streak/stats calculations, use cases
+│   ├── download/        # Optional model download
+│   ├── llm/             # IdeaGenerator abstraction, MediaPipe, curated fallback
+│   ├── navigation/      # Deep-link state
+│   └── notifications/   # Alarms, receivers, notification helpers
 ├── feature/
-│   ├── habits/          # Habit list, detail, and edit screens
-│   ├── onboarding/      # First-run onboarding flow
-│   └── settings/        # App settings screen
-└── widget/              # Home screen widget implementation
+│   ├── habits/          # List, detail, add/edit
+│   ├── onboarding/      # Four-page first-run flow
+│   ├── settings/        # Profile and settings
+│   ├── stats/           # Monthly review
+│   └── today/           # Daily dashboard
+├── navigation/          # Root navigation and four-tab shell
+└── widget/              # Overview, streak, and idea Glance widgets
 ```
 
-### Key Components
+### Local data and migration
 
-#### Data Layer
-- **Room Database**: Stores habits, completion logs, and AI-generated ideas
-- **Repositories**: Abstract data access with Flow-based reactive streams
-- **Migration Strategy**: Schema versioning with Room migrations
+The Room database is version 2. The 1→2 migration adds `description` and `iconKey` without dropping existing habits or completion logs. Destructive migration is not used in any build type. The migration is covered by a Robolectric test.
 
-#### Domain Layer
-- **Use Cases**: Business logic for habit tracking and idea generation
-- **Streak Calculator**: Intelligent streak calculation respecting goal days
-- **Idea Queue Filler**: Pre-generates ideas for upcoming reminders
+## Ideas and the optional model
 
-#### Presentation Layer
-- **ViewModels**: State management with StateFlow
-- **Compose Screens**: Declarative UI with reactive state
-- **Navigation**: Type-safe navigation with Compose Navigation
+- Idea generation is behind the `IdeaGenerator` interface.
+- If the model is present, Littly can generate ideas on-device.
+- If it is absent, the curated fallback supplies offline ideas. Those are labeled **Built-in**, never as AI-generated.
+- Turning ideas off does not affect tracking, statistics, reminders, or widgets.
+- Generated ideas are stored locally, and recent idea text is passed to generation to reduce repetition.
+- No model inference runs when a notification fires. Notifications use a stored queued idea or a short default reminder message.
+- Model download is isolated from core tracking. The app never requires the network to create, edit, complete, archive, or review habits.
 
-#### LLM Integration
-- **IdeaGenerator Interface**: Abstraction for different LLM providers
-- **MediaPipe Implementation**: On-device inference with Gemma 3 1B
-- **Fallback Strategy**: NoopIdeaGenerator for devices without LLM support
-- **JSON Parser**: Robust parsing with multiple recovery strategies
+## Reminders
 
-#### Widget
-- **Glance Framework**: Modern widget implementation
-- **Hilt Integration**: Dependency injection in widget context
-- **Real-time Updates**: Automatic refresh on data changes
+- Reminders respect each habit’s enabled state, time, and reminder days (falling back to goal days).
+- Reminders are rescheduled after boot, package replacement, and app start.
+- Exact alarms are used when permitted; otherwise Android may delay reminders by a few minutes.
+- Battery optimization and OEM background restrictions can affect delivery. Settings explains how to improve reliability.
+- Notification permission is requested from onboarding or the reminder form with context.
 
-## Setup
+## Build and run
 
-### Prerequisites
-- Android Studio Ladybug or later
-- JDK 21 (Android Studio bundled JBR)
+Requirements:
+- Android Studio Ladybug or newer
+- JDK 21
 - Android SDK 36
-- Minimum SDK 24 (Android 7.0)
-
-### Building the Project
+- Minimum Android 7.0 (API 24)
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd Littly
-
-# Build debug APK
+# Debug APK
 ./gradlew assembleDebug
 
-# Run tests
+# Unit tests
 ./gradlew testDebugUnitTest
 
-# Install on connected device
+# Lint
+./gradlew lintDebug
+
+# Install on a connected device
 ./gradlew installDebug
 ```
 
-### Model Download
-The app requires downloading the Gemma 3 1B model (~550MB) on first launch:
-- Downloads automatically when Wi-Fi is available
-- Can be triggered manually from Settings
-- Supports resume if interrupted
-- Stored in app's internal storage
+If your shell’s `JAVA_HOME` points to an older JDK, override it, for example:
 
-## Permissions
+```bash
+JAVA_HOME=/path/to/jdk-21 ./gradlew testDebugUnitTest
+```
 
-The app requests the following permissions:
-- `POST_NOTIFICATIONS` (Android 13+): For habit reminders
-- `SCHEDULE_EXACT_ALARM` (Android 12+): For precise reminder timing
-- `RECEIVE_BOOT_COMPLETED`: To reschedule alarms after device restart
-- `FOREGROUND_SERVICE`: For model download progress
-- `INTERNET`: For downloading the LLM model
+The optional model is downloaded from within the app. It is not required to build, test, or use the tracker.
 
 ## Testing
 
-The project includes comprehensive unit tests:
-- **86 unit tests** covering business logic
-- **Streak calculation** with goal day awareness
-- **Repository operations** with in-memory Room database
-- **LLM integration** with mock generators
-- **Notification scheduling** logic
+The unit suite covers:
+- Streak calculations, including pending-today behavior and best-run date ranges
+- Today, weekly, monthly, trend, and 30-day statistics
+- Room persistence and the v1→v2 migration
+- Habit editing, description/icon persistence, reminder days, and validation
+- Reminder time/planner calculations
+- Idea parsing, fallback behavior, anti-repeat logic, and source labels
+- Widget data selection, responsive item limits, and widget theme resolution
+- DataStore name/theme settings
 
-Run tests:
-```bash
-./gradlew testDebugUnitTest
-```
+Latest verification:
+- `testDebugUnitTest`: **111 tests passed**
+- `assembleDebug`: **successful**
+- `lintDebug`: **successful, 0 errors**
 
-## Development Milestones
+No physical device or emulator was connected during the final verification, so runtime widget rendering and notification delivery were not device-tested in this environment.
 
-The project was developed incrementally through 8 milestones:
+## Not implemented
 
-1. **M0 - Project Foundation**: Gradle setup, theme, app shell
-2. **M1 - Data Layer**: Room database, repositories, streak calculation
-3. **M2 - Habit CRUD**: List, detail, and edit screens
-4. **M3 - Notifications**: Alarms, receivers, permission handling
-5. **M4 - LLM Layer**: IdeaGenerator, MediaPipe integration, classifiers
-6. **M5 - Model Download**: WorkManager-based download with resume
-7. **M6 - Idea Queue**: Pre-generation and notification integration
-8. **M7 - Widget**: Glance home screen widget
+- Cloud sync, accounts, social features, or cross-device backup
+- Habit timers or duration tracking
+- Idea metadata such as duration, tools, or tags
+- Dynamic Material You color, intentionally omitted to protect the Littly palette
+- User profile photos or authentication
+- Server-side analytics
 
-## Known Limitations
+## Design references
 
-- Model download requires ~550MB storage
-- LLM inference may be slow on older devices
-- Exact alarm permission may be revoked by system on some devices
-- Widget updates are limited by Android system constraints
-
-## Future Enhancements
-
-- Cloud sync for habit data
-- Multiple LLM model support
-- Habit templates and suggestions
-- Social features and accountability
-- Advanced analytics and insights
-
-## License
-
-This project is proprietary software.
-
-## Contact
-
-For questions or feedback, please open an issue on the repository.
+The visual references used for layout and hierarchy are in `docs/`. Nunito is bundled under the SIL Open Font License; see `docs/Nunito-OFL.txt`.

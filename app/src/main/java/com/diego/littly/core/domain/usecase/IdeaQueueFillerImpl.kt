@@ -1,23 +1,29 @@
 package com.diego.littly.core.domain.usecase
 
-import com.diego.littly.core.domain.model.Weekdays
 import com.diego.littly.core.domain.repository.HabitRepository
 import com.diego.littly.core.domain.repository.IdeaRepository
+import com.diego.littly.core.domain.repository.SettingsRepository
 import com.diego.littly.core.domain.time.TimeProvider
 import com.diego.littly.core.llm.HabitClassifier
 import com.diego.littly.core.llm.IdeaEvent
 import com.diego.littly.core.llm.IdeaGenerator
 import com.diego.littly.core.llm.IdeaRequest
+import com.diego.littly.core.notifications.ReminderTime
+import com.diego.littly.widget.WidgetUpdateHelper
 import java.time.LocalDate
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class IdeaQueueFillerImpl @Inject constructor(
     private val habitRepository: HabitRepository,
     private val ideaRepository: IdeaRepository,
     private val ideaGenerator: IdeaGenerator,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
+    private val widgetUpdateHelper: WidgetUpdateHelper,
+    private val settingsRepository: SettingsRepository
 ) : IdeaQueueFiller {
     override suspend fun fillQueue(habitId: Long, days: Int) {
+        if (!settingsRepository.ideaEngineEnabled.first()) return
         val habit = habitRepository.getHabit(habitId) ?: return
         if (!habit.reminder.enabled) return
         
@@ -27,7 +33,7 @@ class IdeaQueueFillerImpl @Inject constructor(
         val unscheduledDays = mutableListOf<LocalDate>()
         for (i in 0 until days) {
             val date = today.plusDays(i.toLong())
-            if (Weekdays.isGoalDay(date, habit.goalDays)) {
+            if (date.dayOfWeek in ReminderTime.effectiveReminderDays(habit)) {
                 val existing = ideaRepository.getQueuedIdeaForDate(habitId, date)
                 if (existing == null) {
                     unscheduledDays.add(date)
@@ -71,6 +77,7 @@ class IdeaQueueFillerImpl @Inject constructor(
                 ideaRepository.scheduleIdea(id, unscheduledDays[index])
             }
         }
+        widgetUpdateHelper.updateAllWidgets()
     }
     
     override suspend fun fillAllQueues(days: Int) {

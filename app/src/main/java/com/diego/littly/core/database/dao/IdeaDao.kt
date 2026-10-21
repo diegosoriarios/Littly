@@ -15,6 +15,9 @@ interface IdeaDao {
     @Query("SELECT * FROM ideas WHERE habitId = :habitId ORDER BY createdAtMillis DESC LIMIT :limit")
     fun observeForHabit(habitId: Long, limit: Int): Flow<List<IdeaEntity>>
 
+    @Query("SELECT * FROM ideas ORDER BY createdAtMillis DESC LIMIT :limit")
+    fun observeLatest(limit: Int): Flow<List<IdeaEntity>>
+
     @Query("SELECT * FROM ideas WHERE habitId = :habitId ORDER BY createdAtMillis DESC LIMIT :limit")
     suspend fun getRecentForHabit(habitId: Long, limit: Int): List<IdeaEntity>
 

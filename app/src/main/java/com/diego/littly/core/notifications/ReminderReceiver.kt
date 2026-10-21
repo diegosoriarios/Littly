@@ -37,7 +37,12 @@ class ReminderReceiver : BroadcastReceiver() {
                 if (!settingsRepository.remindersMasterEnabled.first()) return@launch
 
                 val today = timeProvider.today()
-                val queuedIdea = ideaRepository.getQueuedIdeaForDate(habitId, today)
+                val ideaEnabled = settingsRepository.ideaEngineEnabled.first()
+                val queuedIdea = if (ideaEnabled) {
+                    ideaRepository.getQueuedIdeaForDate(habitId, today)
+                } else {
+                    null
+                }
                 val body = queuedIdea?.text ?: context.getString(R.string.reminder_default_body, habit.name)
                 queuedIdea?.let { ideaRepository.markShown(it.id) }
 

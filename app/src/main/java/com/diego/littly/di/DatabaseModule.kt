@@ -21,11 +21,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): LittlyDatabase =
         Room.databaseBuilder(context, LittlyDatabase::class.java, LittlyDatabase.NAME)
-            .apply {
-                if (com.diego.littly.BuildConfig.DEBUG) {
-                    fallbackToDestructiveMigration(dropAllTables = true)
-                }
-            }
+            .addMigrations(LittlyDatabase.MIGRATION_1_2)
             .build()
 
     @Provides

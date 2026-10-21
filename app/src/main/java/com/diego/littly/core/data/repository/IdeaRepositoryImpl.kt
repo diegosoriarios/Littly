@@ -22,6 +22,9 @@ class IdeaRepositoryImpl @Inject constructor(
     override fun observeForHabit(habitId: Long, limit: Int): Flow<List<Idea>> =
         ideaDao.observeForHabit(habitId, limit).map { list -> list.map { it.toDomain() } }
 
+    override fun observeLatest(limit: Int): Flow<List<Idea>> =
+        ideaDao.observeLatest(limit).map { list -> list.map { it.toDomain() } }
+
     override suspend fun getRecentIdeas(habitId: Long, limit: Int): List<Idea> =
         ideaDao.getRecentForHabit(habitId, limit).map { it.toDomain() }
 

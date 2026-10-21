@@ -18,7 +18,9 @@ interface HabitRepository {
         name: String,
         goalDays: Set<DayOfWeek>,
         reminder: Reminder,
-        colorIndex: Int
+        colorIndex: Int,
+        description: String? = null,
+        iconKey: String = com.diego.littly.core.domain.model.HabitIcon.default.key
     ): Long
 
     suspend fun updateHabit(habit: Habit)

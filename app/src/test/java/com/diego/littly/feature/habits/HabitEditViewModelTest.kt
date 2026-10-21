@@ -41,7 +41,9 @@ class HabitEditViewModelTest {
             val name: String,
             val goalDays: Set<DayOfWeek>,
             val reminder: Reminder,
-            val colorIndex: Int
+            val colorIndex: Int,
+            val description: String?,
+            val iconKey: String
         )
 
         var added: Added? = null
@@ -66,9 +68,11 @@ class HabitEditViewModelTest {
             name: String,
             goalDays: Set<DayOfWeek>,
             reminder: Reminder,
-            colorIndex: Int
+            colorIndex: Int,
+            description: String?,
+            iconKey: String
         ): Long {
-            added = Added(name, goalDays, reminder, colorIndex)
+            added = Added(name, goalDays, reminder, colorIndex, description, iconKey)
             return 1L
         }
 
@@ -110,6 +114,8 @@ class HabitEditViewModelTest {
     private fun existingHabit() = Habit(
         id = 5L,
         name = "draw more",
+        description = "ten quiet minutes",
+        iconKey = "brush",
         createdAt = today.minusDays(10),
         goalDays = setOf(DayOfWeek.MONDAY, DayOfWeek.FRIDAY),
         reminder = Reminder(enabled = true, minuteOfDay = 540),
@@ -150,6 +156,9 @@ class HabitEditViewModelTest {
         assertEquals(true, state.reminderEnabled)
         assertEquals(540, state.reminderMinuteOfDay)
         assertEquals(2, state.colorIndex)
+        assertEquals("ten quiet minutes", state.description)
+        assertEquals("brush", state.iconKey)
+        assertEquals(setOf(DayOfWeek.MONDAY, DayOfWeek.FRIDAY), state.reminderDays)
     }
 
     @Test
@@ -171,6 +180,9 @@ class HabitEditViewModelTest {
         assertEquals(true, added.reminder.enabled)
         assertEquals(480, added.reminder.minuteOfDay)
         assertEquals(3, added.colorIndex)
+        assertEquals(null, added.description)
+        assertEquals("sparkles", added.iconKey)
+        assertEquals(setOf(DayOfWeek.MONDAY), added.reminder.days)
         assertTrue(viewModel.state.value.saved)
     }
 
@@ -210,6 +222,70 @@ class HabitEditViewModelTest {
         assertEquals(3, updated.sortOrder)
         assertEquals(true, updated.reminder.enabled)
         assertEquals(540, updated.reminder.minuteOfDay)
+    }
+
+    @Test
+    fun save_addMode_persistsDescriptionIconAndReminderDays() = runTest {
+        val repo = FakeHabitRepository()
+        val viewModel = addModeViewModel(repo)
+
+        viewModel.onNameChange("read more")
+        viewModel.onDescriptionChange("  a little every night  ")
+        viewModel.onIconChange("book")
+        viewModel.onGoalDaysChange(setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))
+        viewModel.onReminderEnabledChange(true)
+        viewModel.onReminderTimeChange(1_200)
+        viewModel.onReminderDaysChange(setOf(DayOfWeek.MONDAY))
+        viewModel.save()
+        advanceUntilIdle()
+
+        val added = repo.added!!
+        assertEquals("a little every night", added.description)
+        assertEquals("book", added.iconKey)
+        assertEquals(setOf(DayOfWeek.MONDAY), added.reminder.days)
+        assertEquals(1_200, added.reminder.minuteOfDay)
+    }
+
+    @Test
+    fun reminderEnabled_defaultsToNineAndGoalDays() = runTest {
+        val viewModel = addModeViewModel(FakeHabitRepository())
+        viewModel.onGoalDaysChange(setOf(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY))
+        viewModel.onReminderEnabledChange(true)
+
+        assertEquals(9 * 60, viewModel.state.value.reminderMinuteOfDay)
+        assertEquals(setOf(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY), viewModel.state.value.reminderDays)
+    }
+
+    @Test
+    fun save_blockedWhenReminderEnabledWithoutDays() = runTest {
+        val repo = FakeHabitRepository()
+        val viewModel = addModeViewModel(repo)
+
+        viewModel.onNameChange("read more")
+        viewModel.onReminderEnabledChange(true)
+        viewModel.onReminderDaysChange(emptySet())
+        viewModel.save()
+        advanceUntilIdle()
+
+        assertNull(repo.added)
+        assertTrue(viewModel.state.value.reminderDaysError)
+        assertFalse(viewModel.state.value.canSave)
+    }
+
+    @Test
+    fun save_editMode_preservesDescriptionAndIconWhenUnchanged() = runTest {
+        val repo = FakeHabitRepository(stored = existingHabit())
+        val viewModel = editModeViewModel(repo)
+        advanceUntilIdle()
+
+        viewModel.onNameChange("still drawing")
+        viewModel.save()
+        advanceUntilIdle()
+
+        assertEquals("still drawing", repo.updated!!.name)
+        assertEquals("ten quiet minutes", repo.updated!!.description)
+        assertEquals("brush", repo.updated!!.iconKey)
+        assertEquals(today.minusDays(10), repo.updated!!.createdAt)
     }
 
     @Test

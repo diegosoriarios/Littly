@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config
 class HabitRepositoryTest {
 
     private lateinit var db: LittlyDatabase
-    private lateinit var repository: HabitRepositoryImpl
+    private lateinit var repository: com.diego.littly.core.domain.repository.HabitRepository
     private val time = FixedTimeProvider(LocalDate.of(2026, 10, 19))
     private val fakeWidgetUpdateHelper = object : WidgetUpdateHelper(
         ApplicationProvider.getApplicationContext()
@@ -76,6 +76,22 @@ class HabitRepositoryTest {
         assertEquals(2, draw.colorIndex)
         assertEquals(0, draw.sortOrder)
         assertEquals(1, read.sortOrder)
+    }
+
+    @Test
+    fun addHabit_persistsDescriptionAndIcon() = runTest {
+        val id = repository.addHabit(
+            name = "draw more",
+            goalDays = DayOfWeek.entries.toSet(),
+            reminder = Reminder(),
+            colorIndex = 1,
+            description = "  ten quiet minutes  ",
+            iconKey = "brush"
+        )
+
+        val habit = repository.getHabit(id)!!
+        assertEquals("ten quiet minutes", habit.description)
+        assertEquals("brush", habit.iconKey)
     }
 
     @Test

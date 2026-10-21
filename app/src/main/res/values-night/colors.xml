@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Widget colors - Dark theme -->
-    <color name="widget_background">#FF1C1B1F</color>
-    <color name="widget_title">#FFE6E1E5</color>
-    <color name="widget_text">#FFE6E1E5</color>
-    <color name="widget_subtitle">#FFCAC4D0</color>
-    <color name="widget_accent">#FFD0BCFF</color>
-    <color name="widget_on_accent">#FF381E72</color>
-    <color name="widget_checkbox_empty">#FF49454F</color>
+    <!-- Widget colors - dark -->
+    <color name="widget_background">#FF141A20</color>
+    <color name="widget_card">#FF1C242D</color>
+    <color name="widget_title">#FFFFFCF8</color>
+    <color name="widget_text">#FFFFFCF8</color>
+    <color name="widget_subtitle">#FFC9BCAD</color>
+    <color name="widget_accent">#FFE88650</color>
+    <color name="widget_on_accent">#FF2E1408</color>
+    <color name="widget_checkbox_empty">#FF3D454E</color>
+    <color name="widget_success">#FF9CBCA2</color>
+    <color name="widget_on_success">#FF122016</color>
+    <color name="widget_on_navy_muted">#FFAEB8C2</color>
+    <color name="widget_navy">#FF0E151C</color>
+    <color name="widget_on_navy">#FFFFFCF8</color>
+    <color name="widget_idea_background">#FF352B17</color>
+    <color name="widget_idea_border">#FF5C4A22</color>
+    <color name="widget_idea_text">#FFFFF4DA</color>
+    <color name="widget_idea_label">#FFE8C15D</color>
+    <color name="widget_idea_accent">#FFE8C15D</color>
 </resources>

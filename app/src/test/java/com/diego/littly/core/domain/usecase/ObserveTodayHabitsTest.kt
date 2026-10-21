@@ -35,7 +35,9 @@ class ObserveTodayHabitsTest {
             name: String,
             goalDays: Set<DayOfWeek>,
             reminder: Reminder,
-            colorIndex: Int
+            colorIndex: Int,
+            description: String?,
+            iconKey: String
         ): Long = error("not used")
 
         override suspend fun updateHabit(habit: Habit) = error("not used")

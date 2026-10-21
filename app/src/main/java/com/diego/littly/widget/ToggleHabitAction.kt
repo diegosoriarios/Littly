@@ -32,8 +32,7 @@ class ToggleHabitAction : ActionCallback {
             source = CompletionSource.WIDGET
         )
 
-        // Update the widget to reflect the change
-        LittlyWidget().update(context, glanceId)
+        entryPoint.widgetUpdateHelper().updateAllWidgets()
     }
 
     companion object {

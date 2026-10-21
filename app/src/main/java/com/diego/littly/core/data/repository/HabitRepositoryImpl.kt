@@ -43,12 +43,16 @@ class HabitRepositoryImpl @Inject constructor(
         name: String,
         goalDays: Set<DayOfWeek>,
         reminder: Reminder,
-        colorIndex: Int
+        colorIndex: Int,
+        description: String?,
+        iconKey: String
     ): Long {
         val sortOrder = (habitDao.maxSortOrder() ?: -1) + 1
         val id = habitDao.insert(
             Habit(
                 name = name.trim(),
+                description = description?.trim()?.takeIf { it.isNotEmpty() },
+                iconKey = iconKey,
                 createdAt = timeProvider.today(),
                 goalDays = goalDays,
                 reminder = reminder,

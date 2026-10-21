@@ -2,7 +2,7 @@ package com.diego.littly.core.data.settings
 
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.diego.littly.testing.FixedTimeProvider
+import com.diego.littly.core.domain.model.ThemeMode
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +46,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(false, repository.onboardingComplete.first())
         assertEquals(true, repository.ideaEngineEnabled.first())
         assertEquals(true, repository.wifiOnlyDownload.first())
-        assertEquals(false, repository.dynamicColorEnabled.first())
+        assertEquals(ThemeMode.SYSTEM, repository.themeMode.first())
+        assertEquals("", repository.displayName.first())
         assertEquals(true, repository.remindersMasterEnabled.first())
     }
 
@@ -60,12 +61,14 @@ class DataStoreSettingsRepositoryTest {
     fun setters_updateFlows() = runBlocking {
         repository.setIdeaEngineEnabled(false)
         repository.setWifiOnlyDownload(false)
-        repository.setDynamicColorEnabled(true)
+        repository.setThemeMode(ThemeMode.DARK)
+        repository.setDisplayName("  Alex  ")
         repository.setRemindersMasterEnabled(false)
 
         assertEquals(false, repository.ideaEngineEnabled.first())
         assertEquals(false, repository.wifiOnlyDownload.first())
-        assertEquals(true, repository.dynamicColorEnabled.first())
+        assertEquals(ThemeMode.DARK, repository.themeMode.first())
+        assertEquals("Alex", repository.displayName.first())
         assertEquals(false, repository.remindersMasterEnabled.first())
     }
 }
