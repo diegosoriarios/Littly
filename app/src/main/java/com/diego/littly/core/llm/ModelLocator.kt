@@ -19,9 +19,9 @@ class ModelLocator @Inject constructor(
         modelFile.exists() && modelFile.length() >= MIN_MODEL_BYTES
 
     companion object {
-        const val MODEL_FILE_NAME = "gemma-3-1b-it-int4.task"
+        const val MODEL_FILE_NAME = "qwen3-0.6b.litertlm"
 
-        const val MODEL_ID = "gemma-3-1b-it-int4"
+        const val MODEL_ID = "qwen3-0.6b"
 
         const val MIN_MODEL_BYTES = 100L * 1024 * 1024
     }

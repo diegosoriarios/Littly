@@ -204,7 +204,7 @@ class ModelDownloadRepository @Inject constructor(
     }
 
     companion object {
-        const val DEFAULT_MODEL_URL = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task"
+        const val DEFAULT_MODEL_URL = "https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/Qwen3-0.6B.litertlm"
     }
 }
 
